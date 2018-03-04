@@ -1,0 +1,29 @@
+﻿<Window x:Class="FileEncryptionTool.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:FileEncryptionTool"
+        mc:Ignorable="d"
+        Title="File encrypter" ResizeMode="NoResize" Padding="100" WindowStartupLocation="CenterScreen" BorderThickness="0" UseLayoutRounding="False" Margin="0" Height="363.432" Width="538.589">
+    <Grid>
+        <TextBox HorizontalAlignment="Left" Height="23" Margin="165,10,0,0" VerticalAlignment="Top" Width="262"/>
+        <Label Content="Ścieżka pliku wejściowego:" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
+        <Button Content="wybierz..." HorizontalAlignment="Left" Margin="432,11,0,0" VerticalAlignment="Top" Width="75" Click="Button_Click" Height="23"/>
+        <RadioButton Content="ECB" HorizontalAlignment="Left" Margin="22,75,0,0" VerticalAlignment="Top"/>
+        <RadioButton Content="CBC" HorizontalAlignment="Left" Margin="22,95,0,0" VerticalAlignment="Top"/>
+        <RadioButton Content="CFB" HorizontalAlignment="Left" Margin="22,115,0,0" VerticalAlignment="Top"/>
+        <RadioButton Content="OFB" HorizontalAlignment="Left" Margin="22,135,0,0" VerticalAlignment="Top"/>
+        <TextBox x:Name="outputFileName" HorizontalAlignment="Left" Height="23" Margin="165,286,0,0" VerticalAlignment="Top" Width="262"/>
+        <Label Content="Ścieżka pliku wynikowego:" HorizontalAlignment="Left" Margin="10,283,0,0" VerticalAlignment="Top"/>
+        <Button x:Name="outputButton" Content="wybierz..." HorizontalAlignment="Left" Margin="432,286,0,0" VerticalAlignment="Top" Width="75" Click="Button_Click" Height="23"/>
+        <GroupBox Header="Tryb szyfrowania" HorizontalAlignment="Left" Height="112" Margin="10,47,0,0" VerticalAlignment="Top" Width="111"/>
+        <GroupBox Header="Długość bloku" HorizontalAlignment="Left" Height="63" Margin="138,47,0,0" VerticalAlignment="Top" Width="100">
+            <TextBox HorizontalAlignment="Left" Height="23" Margin="10,10,0,0" TextWrapping="Wrap" Text="256" VerticalAlignment="Top" Width="70" TextChanged="TextBox_TextChanged"/>
+        </GroupBox>
+        <Button Content="generuj klucz" HorizontalAlignment="Left" Margin="268,47,0,0" VerticalAlignment="Top" Width="83" Height="32" Click="Button_Click_1"/>
+        <TextBlock x:Name="rng_result" HorizontalAlignment="Left" Margin="388,47,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" Height="208" Width="119"/>
+        <Button Content="Szyfruj" HorizontalAlignment="Left" Margin="268,87,0,0" VerticalAlignment="Top" Width="83" Height="32" Click="Button_Click_2"/>
+
+    </Grid>
+</Window>
