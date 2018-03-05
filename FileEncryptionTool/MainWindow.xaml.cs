@@ -4,18 +4,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using System.Xml.Linq;
+using System.Net;
+using System.Text.RegularExpressions;
 
 namespace FileEncryptionTool
 {
@@ -30,6 +23,8 @@ namespace FileEncryptionTool
         private string _cipherModeName;
         private string _ivName;
 
+        private int _bytesLengthANU = 100;
+
         private List<User> _users;
 
         private class User
@@ -41,7 +36,7 @@ namespace FileEncryptionTool
             }
 
             public string _email;
-            public string _sessionKey; //TODO change type
+            public string _sessionKey; //TODO change type (?)
         }
 
         public MainWindow()
@@ -69,20 +64,46 @@ namespace FileEncryptionTool
 
         private void Update_RNG(List<Point> coords)
         {
-            StringBuilder sb = new StringBuilder();
+            //TODO: add option for choosing which rng methods to use
+
+            //use coordinates entered by user
+            List<byte> bytes = new List<byte>();
             foreach (var p in coords)
             {
-                sb.Append(p.ToString() + "\n");
+                bytes.Add(Convert.ToByte(p.X));
+                bytes.Add(Convert.ToByte(p.Y));
             }
-            sb.Append(System.DateTime.Now.ToBinary().ToString() + "\n");
 
+            //get system time
+            bytes.AddRange(BitConverter.GetBytes(DateTime.Now.ToBinary()));
+
+            //get system uptime
             using (var uptime = new PerformanceCounter("System", "System Up Time"))
             {
                 uptime.NextValue();       //Call this an extra time before reading its value
-                sb.Append(TimeSpan.FromSeconds(uptime.NextValue()).ToString());
+                bytes.AddRange(BitConverter.GetBytes(uptime.NextValue()));
             }
 
-            rng_result.Text = sb.ToString();
+            //get random number from Australian National University's Quantum RNG Server
+            //TODO: add variable length
+            //TODO: add error checking (check for success value in API return, lack of connection)
+
+            string result = new WebClient().DownloadString(string.Format("https://qrng.anu.edu.au/API/jsonI.php?length={0}&type=uint8", _bytesLengthANU));
+            var m = Regex.Match(result, "\"data\":\\[(?<rnd>[0-9,]*?)\\]", RegexOptions.Singleline); //parse JSON with regex
+
+            if (m.Success)
+            {
+                var g = m.Groups["rnd"];
+                if (g != null && g.Success)
+                {
+                    string[] values = g.Value.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+                    foreach (var v in values)
+                        bytes.Add(Byte.Parse(v));
+                }
+            }
+
+
+            rng_result.Text = bytes.ToString();
         }
 
         private void Button_Click_2(object sender, RoutedEventArgs e)
