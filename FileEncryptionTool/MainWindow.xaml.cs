@@ -134,12 +134,16 @@ namespace FileEncryptionTool
                     )
                 )
             );
-            //TODO add creating directory if doesn't exist
-            string directory = (Directory.Exists(outputFileName.Text) ? outputFileName.Text : @"C:\test\default.xml");
+
+            string directory = !string.IsNullOrEmpty(outputFileName.Text) ? outputFileName.Text : @"C:\test\default.xml";
+            string path = outputFileName.Text.Substring(0, outputFileName.Text.LastIndexOf("\\"));
+            if (!Directory.Exists(path))
+                Directory.CreateDirectory(path);
+
             using (StreamWriter writer = new StreamWriter(directory, false))
             {
                 xdoc.Save(writer);
-                writer.Write(rng_result.Text);
+                writer.Write("\n" + rng_result.Text);
                 MessageBox.Show("Pomyślnie zapisano do pliku");
             }
 
