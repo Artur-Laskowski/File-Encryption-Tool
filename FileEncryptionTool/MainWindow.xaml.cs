@@ -44,24 +44,6 @@ namespace FileEncryptionTool
             InitializeComponent();
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            if (openFileDialog.ShowDialog() == true)
-                outputFileName.Text = openFileDialog.FileName;
-        }
-
-        private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-
-        }
-
-        private void Button_Click_1(object sender, RoutedEventArgs e)
-        {
-            RNG_Window win2 = new RNG_Window(Update_RNG);
-            win2.ShowDialog();
-        }
-
         private void Update_RNG(List<Point> coords)
         {
             //TODO: add option for choosing which rng methods to use
@@ -106,7 +88,27 @@ namespace FileEncryptionTool
             rng_result.Text = bytes.ToString();
         }
 
-        private void Button_Click_2(object sender, RoutedEventArgs e)
+        private void inputFile_Button_Click(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            if (openFileDialog.ShowDialog() == true)
+                inputFile_TextBox.Text = openFileDialog.FileName;
+        }
+
+        private void outputFile_Button_Click(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            if (openFileDialog.ShowDialog() == true)
+                outputFile_TextBox.Text = openFileDialog.FileName;
+        }
+
+        private void generateRandomNumber_Button_Click(object sender, RoutedEventArgs e)
+        {
+            RNG_Window win2 = new RNG_Window(Update_RNG);
+            win2.ShowDialog();
+        }
+
+        private void encryptFile_Button_Click(object sender, RoutedEventArgs e)
         {
             _algorithmName = "algoName";
             _keySize = 32;
@@ -135,8 +137,10 @@ namespace FileEncryptionTool
                 )
             );
 
-            string directory = !string.IsNullOrEmpty(outputFileName.Text) ? outputFileName.Text : @"C:\test\default.xml";
-            string path = outputFileName.Text.Substring(0, outputFileName.Text.LastIndexOf("\\"));
+            string pathAndFileName = outputFile_TextBox.Text;
+
+            string directory = !string.IsNullOrEmpty(outputFile_TextBox.Text) ? pathAndFileName : @"C:\test\default.xml";
+            string path = pathAndFileName.Substring(0, pathAndFileName.LastIndexOf("\\"));
             if (!Directory.Exists(path))
                 Directory.CreateDirectory(path);
 
@@ -146,7 +150,6 @@ namespace FileEncryptionTool
                 writer.Write("\n" + rng_result.Text);
                 MessageBox.Show("Pomyślnie zapisano do pliku");
             }
-
         }
     }
 }

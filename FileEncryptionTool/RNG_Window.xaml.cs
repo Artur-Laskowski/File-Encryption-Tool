@@ -32,11 +32,10 @@ namespace FileEncryptionTool
             _coords = new List<Point>();
         }
 
-
-        private void canvas1_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        private void userClickingInput_Canvas_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
-            clicksCounter.Content = (++clicks).ToString() + " / 8";
-            _coords.Add(e.GetPosition(canvas1));
+            clicksCounter_Label.Content = (++clicks).ToString() + " / 8";
+            _coords.Add(e.GetPosition(userClickingInput_Canvas));
 
             if (_coords.Count == 8)
             {
