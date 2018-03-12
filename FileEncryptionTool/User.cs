@@ -47,7 +47,7 @@ namespace FileEncryptionTool
             string[] keyPaths = Directory.GetFiles(_publicKeysDir, "*");
             foreach (string publicKeyPath in keyPaths)
             {
-                string email = Path.GetFileNameWithoutExtension(publicKeyPath);
+                string email = Path.GetFileName(publicKeyPath);
                 string privateKeyPath = Path.Combine(_privateKeysDir, email);
                 allUsers.Add(new User(email, privateKeyPath, publicKeyPath));
             }
@@ -68,56 +68,22 @@ namespace FileEncryptionTool
             createDirectory(_publicKeysDir);
             createDirectory(_privateKeysDir);
 
-
             this._publicKeyPath = Path.Combine(_publicKeysDir, email);
             this._privateKeyPath = Path.Combine(_privateKeysDir, email);
 
-
-
-            using (var rsa = new RSACryptoServiceProvider(1024))
-            {
-                try
-                {
-                    string publicOnlyKeyXML = rsa.ToXmlString(false);
-
-                    
-                    using(StreamWriter fs = new StreamWriter(this._publicKeyPath))
-                    {
-                        fs.Write(publicOnlyKeyXML);
-                    }
-
-                    //TODO: add private key encryption
-                    string privateKeyXML = rsa.ToXmlString(true);
-
-                    using (StreamWriter fs = new StreamWriter(this._privateKeyPath))
-                    {
-                        fs.Write(privateKeyXML);
-                    }
-
-
-
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex.ToString());
-                }
-                finally
-                {
-                    rsa.PersistKeyInCsp = false;
-                }
-            }
-
-
+            RSA.generateKeyPair(this._publicKeyPath, this._privateKeyPath, password);
         }
 
-        public string getPublicKey()
+        public RSA.Key getPublicKey()
         {
-            using(StreamReader fs = new StreamReader(this._publicKeyPath))
-            {
-                return fs.ReadToEnd();
-            }
+            return RSA.loadPublicKey(this._publicKeyPath);
         }
-        
+
+        public RSA.Key getPrivateKey(string password)
+        {
+            return RSA.loadPrivateKey(this._privateKeyPath, password);
+        }
+
 
         public bool Equals(User other)
         {

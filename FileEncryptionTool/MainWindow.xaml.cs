@@ -123,7 +123,7 @@ namespace FileEncryptionTool
                         select new XElement("User",
                             new XElement("Email", user.Email)
                             //TODO add sessionKey encryption
-                            //new XElement("SessionKey", encpryt(sessionKey, user.getPublicKey()))
+                            //new XElement("SessionKey", RSA.encrypt(sessionKey, user.getPublicKey()))
                         )
                     )
                 )

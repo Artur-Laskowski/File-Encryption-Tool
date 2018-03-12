@@ -57,6 +57,7 @@
     <Compile Include="RNG_Window.xaml.cs">
       <DependentUpon>RNG_Window.xaml</DependentUpon>
     </Compile>
+    <Compile Include="RSA.cs" />
     <Compile Include="User.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
