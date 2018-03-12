@@ -9,6 +9,7 @@ using System.Windows.Controls;
 using System.Xml.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
+using System.Security.Cryptography;
 
 namespace FileEncryptionTool
 {
@@ -88,6 +89,86 @@ namespace FileEncryptionTool
             rng_result.Text = bytes.ToString();
         }
 
+        private byte[] getAnuBytes(int length)
+        {
+            byte[] bytes = new byte[length];
+            using (var wc = new WebClient())
+            {
+                string result = wc.DownloadString(string.Format("https://qrng.anu.edu.au/API/jsonI.php?length={0}&type=uint8", length));
+                var m = Regex.Match(result, "\"data\":\\[(?<rnd>[0-9,]*?)\\]", RegexOptions.Singleline); //parse JSON with regex
+
+                if (m.Success)
+                {
+                    var g = m.Groups["rnd"];
+                    if (g != null && g.Success)
+                    {
+                        string[] values = g.Value.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+                        for (int i = 0; i < values.Length; i++)
+                            bytes[i] = Byte.Parse(values[i]);
+                    }
+                }
+                return bytes;
+            }
+        }
+
+        private void encryptFile()
+        {
+            using (Aes aesAlg = Aes.Create())
+            {
+                byte[] key = aesAlg.Key = getAnuBytes(32);
+                aesAlg.GenerateIV();
+                var iv = aesAlg.IV;
+
+                ICryptoTransform encryptor = aesAlg.CreateEncryptor(aesAlg.Key, aesAlg.IV);
+                byte[] buffer = new byte[256];
+                using (Stream output = File.Open(outputFile_TextBox.Text, FileMode.Create))
+                {
+                    using (CryptoStream cs = new CryptoStream(output, encryptor, CryptoStreamMode.Write))
+                    {
+                        using (BinaryWriter bw = new BinaryWriter(cs))
+                        {
+                            using (Stream input = File.OpenRead(inputFile_TextBox.Text))
+                            {
+                                int count = 0;
+                                while ((count = input.Read(buffer, 0, 256)) > 0)
+                                    bw.Write(buffer, 0, count);
+                            }
+                        }
+                    }
+                }
+                decryptFile(key, iv);
+            }
+
+
+        }
+
+        private void decryptFile(byte[] key, byte[] iv)
+        {
+            using (Aes aesAlg = Aes.Create())
+            {
+                aesAlg.Key = key;
+                aesAlg.IV = iv;
+
+                ICryptoTransform decryptor = aesAlg.CreateDecryptor(aesAlg.Key, aesAlg.IV);
+                byte[] buffer = new byte[256];
+                using (Stream output = File.Open(@"C:\test3\decrypted.jpg", FileMode.Create))
+                {
+                    using (CryptoStream cs = new CryptoStream(output, decryptor, CryptoStreamMode.Write))
+                    {
+                        using (BinaryWriter bw = new BinaryWriter(cs))
+                        {
+                            using (Stream input = File.OpenRead(outputFile_TextBox.Text))
+                            {
+                                int count = 0;
+                                while ((count = input.Read(buffer, 0, 256)) > 0)
+                                    bw.Write(buffer, 0, count);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         private void inputFile_Button_Click(object sender, RoutedEventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
@@ -150,6 +231,8 @@ namespace FileEncryptionTool
                 writer.Write("\n" + rng_result.Text);
                 MessageBox.Show("Pomyślnie zapisano do pliku");
             }
+
+            encryptFile();
         }
     }
 }
