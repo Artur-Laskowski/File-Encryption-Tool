@@ -9,7 +9,8 @@ using System.Windows.Controls;
 using System.Xml.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
-using System.Security.Cryptography;
+using System.ComponentModel;
+using System.Windows.Threading;
 
 namespace FileEncryptionTool
 {
@@ -101,64 +102,6 @@ namespace FileEncryptionTool
             }
         }
 
-        private void encryptFile()
-        {
-            using (Aes aesAlg = Aes.Create())
-            {
-                byte[] key = aesAlg.Key = getAnuBytes(32);
-                aesAlg.GenerateIV();
-                var iv = aesAlg.IV;
-
-                ICryptoTransform encryptor = aesAlg.CreateEncryptor(aesAlg.Key, aesAlg.IV);
-                byte[] buffer = new byte[256];
-                using (Stream output = File.Open(outputFile_TextBox.Text, FileMode.Create))
-                {
-                    using (CryptoStream cs = new CryptoStream(output, encryptor, CryptoStreamMode.Write))
-                    {
-                        using (BinaryWriter bw = new BinaryWriter(cs))
-                        {
-                            using (Stream input = File.OpenRead(inputFile_TextBox.Text))
-                            {
-                                int count = 0;
-                                while ((count = input.Read(buffer, 0, 256)) > 0)
-                                    bw.Write(buffer, 0, count);
-                            }
-                        }
-                    }
-                }
-                decryptFile(key, iv);
-            }
-
-
-        }
-
-        private void decryptFile(byte[] key, byte[] iv)
-        {
-            using (Aes aesAlg = Aes.Create())
-            {
-                aesAlg.Key = key;
-                aesAlg.IV = iv;
-
-                ICryptoTransform decryptor = aesAlg.CreateDecryptor(aesAlg.Key, aesAlg.IV);
-                byte[] buffer = new byte[256];
-                using (Stream output = File.Open(@"C:\test3\decrypted.jpg", FileMode.Create))
-                {
-                    using (CryptoStream cs = new CryptoStream(output, decryptor, CryptoStreamMode.Write))
-                    {
-                        using (BinaryWriter bw = new BinaryWriter(cs))
-                        {
-                            using (Stream input = File.OpenRead(outputFile_TextBox.Text))
-                            {
-                                int count = 0;
-                                while ((count = input.Read(buffer, 0, 256)) > 0)
-                                    bw.Write(buffer, 0, count);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
         private void inputFile_Button_Click(object sender, RoutedEventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
@@ -220,11 +163,18 @@ namespace FileEncryptionTool
             using (StreamWriter writer = new StreamWriter(directory, false))
             {
                 xdoc.Save(writer);
-                writer.Write("\n" + rng_result.Text);
-                MessageBox.Show("Pomyślnie zapisano do pliku");
+                writer.Write("\nDATA\n");
             }
+            FileEncryption.ProgressUpdate pu = (
+                (int i) => encryptionProgressBar.Dispatcher.Invoke(
+                    () => encryptionProgressBar.Value = i,
+                    DispatcherPriority.Background
+                )
+            );
 
-            encryptFile();
+            FileEncryption.EncryptFile(inputFile_TextBox.Text, outputFile_TextBox.Text, getAnuBytes(32), getAnuBytes(16), pu);
+
+            MessageBox.Show("Pomyślnie zapisano do pliku");
         }
     }
 }

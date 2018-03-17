@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:FileEncryptionTool"
         mc:Ignorable="d"
-        Title="File encrypter" ResizeMode="NoResize" Padding="100" WindowStartupLocation="CenterScreen" BorderThickness="0" UseLayoutRounding="False" Margin="0" Height="363.432" Width="538.589">
+        Title="File encrypter" ResizeMode="NoResize" Padding="100" WindowStartupLocation="CenterScreen" BorderThickness="0" UseLayoutRounding="False" Margin="0" Height="527.438" Width="538.589">
     <Grid>
         <TextBox x:Name="inputFile_TextBox" HorizontalAlignment="Left" Height="23" Margin="165,10,0,0" VerticalAlignment="Top" Width="262"/>
         <Label Content="Ścieżka pliku wejściowego:" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
@@ -24,6 +24,7 @@
         <Button x:Name="generateRandomNumber_Button" Content="generuj klucz" HorizontalAlignment="Left" Margin="268,47,0,0" VerticalAlignment="Top" Width="83" Height="32" Click="generateRandomNumber_Button_Click"/>
         <TextBlock x:Name="rng_result" HorizontalAlignment="Left" Margin="388,47,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" Height="208" Width="119"/>
         <Button x:Name="encryptFile_Button" Content="Szyfruj" HorizontalAlignment="Left" Margin="268,87,0,0" VerticalAlignment="Top" Width="83" Height="32" Click="encryptFile_Button_Click"/>
+        <ProgressBar x:Name="encryptionProgressBar" HorizontalAlignment="Left" Height="16" Margin="22,314,0,0" VerticalAlignment="Top" Width="485"/>
 
     </Grid>
 </Window>
