@@ -32,7 +32,7 @@ namespace FileEncryptionTool
                     aesAlg.Key = key;
                     aesAlg.IV = iv;
 
-                    MessageBox.Show(String.Format("Starting encryption, params:\nkeySize: {0}\nblockSize: {1}\nmode: {2}", keySize, blockSize, mode.ToString()));
+                    MessageBox.Show(String.Format("Rozpoczynanie szyfrowania, parametry:\nrozmiar klucza: {0}\nrozmiar bloku: {1}\ntryb: {2}", keySize, blockSize, mode.ToString()));
 
                     ICryptoTransform encryptor = aesAlg.CreateEncryptor(aesAlg.Key, aesAlg.IV);
                     byte[] buffer = new byte[bufferSize];
@@ -63,8 +63,8 @@ namespace FileEncryptionTool
             catch (Exception e)
             {
                 MessageBox.Show(e.Message, "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
-                return false;
             }
+            return false;
         }
 
         static public bool DecryptFile(string inputFile, string outputFile)
@@ -73,11 +73,16 @@ namespace FileEncryptionTool
             {
                 using (Aes aesAlg = Aes.Create())
                 {
+                    aesAlg.KeySize = keySize;
+                    aesAlg.Mode = mode;
+                    aesAlg.BlockSize = blockSize;
                     aesAlg.Key = key;
                     aesAlg.IV = iv;
 
+                    MessageBox.Show(String.Format("Starting encryption, params:\nkeySize: {0}\nblockSize: {1}\nmode: {2}", keySize, blockSize, mode.ToString()));
+
                     ICryptoTransform decryptor = aesAlg.CreateDecryptor(aesAlg.Key, aesAlg.IV);
-                    byte[] buffer = new byte[256];
+                    byte[] buffer = new byte[bufferSize];
                     using (Stream output = File.Open(outputFile, FileMode.Create))
                     {
                         using (CryptoStream cs = new CryptoStream(output, decryptor, CryptoStreamMode.Write))
@@ -87,8 +92,14 @@ namespace FileEncryptionTool
                                 using (Stream input = File.OpenRead(inputFile))
                                 {
                                     int count = 0;
-                                    while ((count = input.Read(buffer, 0, 256)) > 0)
+                                    double i = 0;
+                                    long totalSize = input.Length / bufferSize;
+                                    while ((count = input.Read(buffer, 0, bufferSize)) > 0)
+                                    {
                                         bw.Write(buffer, 0, count);
+                                        i++;
+                                        pu((int)(i / totalSize * 100.0));
+                                    }
                                 }
                             }
                         }

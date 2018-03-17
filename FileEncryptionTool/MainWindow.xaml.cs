@@ -145,6 +145,37 @@ namespace FileEncryptionTool
         
         private void encryptFile_Button_Click(object sender, RoutedEventArgs e)
         {
+            if (string.IsNullOrEmpty(inputFile_TextBox.Text))
+            {
+                MessageBox.Show("Nie wybrano pliku wejściowego!");
+                return;
+            }
+            try { Path.GetFullPath(inputFile_TextBox.Text); }
+            catch
+            {
+                MessageBox.Show("Folder źródłowy nie istnieje!");
+                return;
+            }
+            if (!File.Exists(inputFile_TextBox.Text))
+            {
+                MessageBox.Show("Plik źródłowy nie istnieje!");
+                return;
+            }
+
+            string outputPath;
+            try { outputPath = inputFile_TextBox.Text.Substring(0, outputFile_TextBox.Text.LastIndexOf("\\")); }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Niepoprawna ścieżka pliku docelowego!");
+                return;
+            }
+            try { Path.GetFullPath(outputFile_TextBox.Text); }
+            catch
+            {
+                MessageBox.Show("Folder docelowy nie istnieje!");
+                return;
+            }
+
             CipherMode cipherMode = (CipherMode)GetSelectedCipherMode();
 
             _algorithmName = "AES";
@@ -185,13 +216,20 @@ namespace FileEncryptionTool
             );
 
             string pathAndFileName = outputFile_TextBox.Text;
-
-            string directory = !string.IsNullOrEmpty(outputFile_TextBox.Text) ? pathAndFileName : @"C:\test\default.xml";
+            
             string path = pathAndFileName.Substring(0, pathAndFileName.LastIndexOf("\\"));
-            if (!Directory.Exists(path))
-                Directory.CreateDirectory(path);
+            try
+            {
+                if (!Directory.Exists(path))
+                    Directory.CreateDirectory(path);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Nie można utworzyć folderu docelowego!");
+                return;
+            }
 
-            using (StreamWriter writer = new StreamWriter(directory, false))
+            using (StreamWriter writer = new StreamWriter(pathAndFileName, false))
             {
                 xdoc.Save(writer);
                 writer.Write("\nDATA\n");
