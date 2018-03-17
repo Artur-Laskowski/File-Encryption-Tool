@@ -11,6 +11,7 @@ using System.Net;
 using System.Text.RegularExpressions;
 using System.ComponentModel;
 using System.Windows.Threading;
+using System.Security.Cryptography;
 
 namespace FileEncryptionTool
 {
@@ -29,11 +30,15 @@ namespace FileEncryptionTool
 
         private List<User> _users = User.loadUsers();
 
-        
-
         public MainWindow()
         {
             InitializeComponent();
+            FileEncryption.pu = (
+                (int i) => encryptionProgressBar.Dispatcher.Invoke(
+                    () => encryptionProgressBar.Value = i,
+                    DispatcherPriority.Background
+                )
+            );
         }
 
         private void Update_RNG(List<Point> coords)
@@ -80,9 +85,12 @@ namespace FileEncryptionTool
             rng_result.Text = bytes.ToString();
         }
 
-        private byte[] getAnuBytes(int length)
+        private byte[] GetAnuBytes(int length)
         {
             byte[] bytes = new byte[length];
+            for (int i = 0; i < length; i++)
+                bytes[i] = (byte)(i + 1);
+            return bytes;
             using (var wc = new WebClient())
             {
                 string result = wc.DownloadString(string.Format("https://qrng.anu.edu.au/API/jsonI.php?length={0}&type=uint8", length));
@@ -100,6 +108,19 @@ namespace FileEncryptionTool
                 }
                 return bytes;
             }
+        }
+
+        private byte GetSelectedCipherMode()
+        {
+            if (modeECB.IsChecked == true)
+                return 2;
+            if (modeCBC.IsChecked == true)
+                return 1;
+            if (modeCFB.IsChecked == true)
+                return 4;
+            if (modeOFB.IsChecked == true)
+                return 3;
+            return 2;
         }
 
         private void inputFile_Button_Click(object sender, RoutedEventArgs e)
@@ -121,17 +142,27 @@ namespace FileEncryptionTool
             RNG_Window win2 = new RNG_Window(Update_RNG);
             win2.ShowDialog();
         }
-
-       
+        
         private void encryptFile_Button_Click(object sender, RoutedEventArgs e)
         {
-            _algorithmName = "algoName";
-            _keySize = 32;
-            _blockSize = 128;
-            _cipherModeName = "cipherName";
+            CipherMode cipherMode = (CipherMode)GetSelectedCipherMode();
+
+            _algorithmName = "AES";
+            _keySize = 256;
+            _blockSize = Int32.Parse(blockSize_TextBox.Text);
+            _cipherModeName = cipherMode.ToString();
             _ivName = "ivName";
-            _users = new List<User>();
-            _users.Add(new User("user@gmail.com", "123123123123123"));
+            _users = new List<User>
+            {
+                new User("user@gmail.com", "123123123123123")
+            };
+
+            FileEncryption.mode = cipherMode;
+            FileEncryption.keySize = _keySize;
+            FileEncryption.key = GetAnuBytes(_keySize >> 3);
+            FileEncryption.bufferSize = 1 << 15;
+            FileEncryption.blockSize = _blockSize;
+            FileEncryption.iv = GetAnuBytes(_blockSize >> 3);
 
 
             //TODO add error checking for block below
@@ -165,16 +196,9 @@ namespace FileEncryptionTool
                 xdoc.Save(writer);
                 writer.Write("\nDATA\n");
             }
-            FileEncryption.ProgressUpdate pu = (
-                (int i) => encryptionProgressBar.Dispatcher.Invoke(
-                    () => encryptionProgressBar.Value = i,
-                    DispatcherPriority.Background
-                )
-            );
 
-            FileEncryption.EncryptFile(inputFile_TextBox.Text, outputFile_TextBox.Text, getAnuBytes(32), getAnuBytes(16), pu);
-
-            MessageBox.Show("Pomyślnie zapisano do pliku");
+            if (FileEncryption.EncryptFile(inputFile_TextBox.Text, outputFile_TextBox.Text))
+                MessageBox.Show("Pomyślnie zapisano do pliku");
         }
     }
 }
