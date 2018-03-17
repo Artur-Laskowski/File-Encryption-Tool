@@ -26,19 +26,9 @@ namespace FileEncryptionTool
 
         private int _bytesLengthANU = 100;
 
-        private List<User> _users;
+        private List<User> _users = User.loadUsers();
 
-        private class User
-        {
-            public User(string email, string sessionKey)
-            {
-                _email = email;
-                _sessionKey = sessionKey;
-            }
-
-            public string _email;
-            public string _sessionKey; //TODO change type (?)
-        }
+        
 
         public MainWindow()
         {
@@ -189,6 +179,7 @@ namespace FileEncryptionTool
             win2.ShowDialog();
         }
 
+       
         private void encryptFile_Button_Click(object sender, RoutedEventArgs e)
         {
             _algorithmName = "algoName";
@@ -211,8 +202,9 @@ namespace FileEncryptionTool
                     new XElement("ApprovedUsers",
                         from user in _users
                         select new XElement("User",
-                            new XElement("Email", user._email),
-                            new XElement("SessionKey", user._sessionKey)
+                            new XElement("Email", user.Email)
+                            //TODO add sessionKey encryption
+                            //new XElement("SessionKey", RSA.encrypt(sessionKey, user.getPublicKey()))
                         )
                     )
                 )
