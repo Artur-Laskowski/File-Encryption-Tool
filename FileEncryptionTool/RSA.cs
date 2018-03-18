@@ -37,11 +37,15 @@ namespace FileEncryptionTool
 
         public static string encryptToString(byte[] content, Key publicKey)
         {
-            return Encoding.UTF8.GetString(encrypt(content, publicKey));
+            byte[] encoded = encrypt(content, publicKey);
+            Console.WriteLine(Encoding.UTF8.GetString(content));
+            Console.WriteLine(Encoding.UTF8.GetString(encoded));
+
+            return Encoding.UTF32.GetString(encoded);
         }
 
 
-        public static byte[] decrypt(byte[] content, Key privateKey)
+        public static byte[] decryptFromString(byte[] content, Key privateKey)
         {
             using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider())
             {

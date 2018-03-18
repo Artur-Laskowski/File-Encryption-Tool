@@ -94,5 +94,16 @@ namespace FileEncryptionTool
         {
             return this.Email;
         }
+
+
+        public static string validatePassword(string password)
+        {
+            if (password.Length < 8) return "Minimalna długość osiem znaków";
+            else if (!password.Any(char.IsDigit)) return "Co najmniej jedna cyfra";
+            else if (!password.Any(char.IsLetter)) return "Co najmniej jedna litera";
+            else if (!password.Any(ch => !char.IsLetterOrDigit(ch))) return "Co najmniej jeden znak specjalny";
+
+            return null;
+        }
     }
 }

@@ -22,8 +22,8 @@ namespace FileEncryptionTool
         static public int keySize;
         static public int blockSize;
         static public List<User> targetUsers;
-        static public User currentUser;
-        static public string password;
+        //static public User currentUser;
+        //static public string password;
 
         static public void InitializeEncryption(string inputFile, string outputFile)
         {
@@ -39,9 +39,7 @@ namespace FileEncryptionTool
                         from user in targetUsers
                         select new XElement("User",
                             new XElement("Email", user.Email),
-                            //TODO add sessionKey encryption
-                            //new XElement("SessionKey", RSA.encrypt(FileEncryption.key, user.getPublicKey()))
-                            new XElement("SessionKey", string.Join("", key))
+                            new XElement("SessionKey", RSA.encryptToString(key, user.getPublicKey()))
                         )
                     )
                 )
@@ -49,8 +47,15 @@ namespace FileEncryptionTool
 
             using (StreamWriter writer = new StreamWriter(outputFile, false))
             {
-                xdoc.Save(writer);
-                writer.Write("\r\nDATA\r\n");
+                try
+                {
+                    xdoc.Save(writer);
+                    writer.Write("\r\nDATA\r\n");
+                }catch(Exception ex)
+                {
+                    MessageBox.Show("Błąd: " + ex);
+                }
+                
             }
 
             if (EncryptFile(inputFile, outputFile))

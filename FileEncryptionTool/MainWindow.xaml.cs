@@ -13,6 +13,7 @@ using System.ComponentModel;
 using System.Windows.Threading;
 using System.Security.Cryptography;
 using System.Text;
+using System.Windows.Media;
 
 namespace FileEncryptionTool
 {
@@ -29,13 +30,14 @@ namespace FileEncryptionTool
 
         private int _bytesLengthANU = 100;
 
-        private List<User> _users = User.loadUsers();
+        //private List<User> _users = new List<User>();
 
         Aes aesHelper = Aes.Create();
 
         public MainWindow()
         {
             InitializeComponent();
+            recipientsListBox.SelectionMode = SelectionMode.Multiple;
             FileEncryption.pu = (
                 (int i) => encryptionProgressBar.Dispatcher.Invoke(
                     () => encryptionProgressBar.Value = i,
@@ -207,12 +209,7 @@ namespace FileEncryptionTool
 
             try
             {
-                //TODO read target users from GUI
-                FileEncryption.targetUsers = new List<User>
-                {
-                    new User("user@gmail.com", "123123123123123"),
-                    new User("user2@gmail.com", "123123123131321")
-                };
+                FileEncryption.targetUsers = recipientsListBox.Items.Cast<User>().ToList();
                 FileEncryption.mode = GetSelectedCipherMode();
                 FileEncryption.keySize = Int32.Parse(keySize_TextBox.Text); //TODO handle incorrect values for every parse
                 FileEncryption.key = GetAnuBytes(FileEncryption.keySize >> 3); //TODO use proper RNG generator
@@ -224,7 +221,7 @@ namespace FileEncryptionTool
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Wystąpił błąd przy szyfrowaniu");
+                MessageBox.Show("Wystąpił błąd przy szyfrowaniu " + ex);
             }
         }
 
@@ -256,6 +253,71 @@ namespace FileEncryptionTool
             catch (Exception ex)
             {
                 MessageBox.Show("Wystąpił błąd przy deszyfracji");
+            }
+        }
+
+
+
+       
+       
+        private void AddUser_Button_Click(object sender, RoutedEventArgs e)
+        {
+            string _email = email.Text;
+            string _password = passwordBox.Password;
+            string _passwordRepeat = passwordBoxRepeat.Password;
+
+            string passwordError = User.validatePassword(_password);
+            string repeatError = validateRepeatedPassoword();
+
+            if(passwordError == null && repeatError == null)
+            {
+                new User(_email, _password);
+                MessageBox.Show("Dodano nowego użytkownika: " + _email);
+            }
+
+            
+        }
+
+
+        private string validateRepeatedPassoword()
+        {
+            if (passwordBoxRepeat.Password != passwordBox.Password)
+            {
+                return "Podane hasła muszą być takie same!";
+            }
+            return null;
+        }
+
+
+
+        private void passwordBoxRepeat_PasswordChanged(object sender, RoutedEventArgs e)
+        {
+            string error = validateRepeatedPassoword();
+
+            if (error != null) passwordReapetError.Content = error;
+            else passwordReapetError.Content = "";
+        }
+
+        private void passwordBox_PasswordChanged(object sender, RoutedEventArgs e)
+        {
+            string error = User.validatePassword(passwordBox.Password);
+
+            if (error != null) passwordError.Content = error;
+            else passwordError.Content = "";
+        }
+
+        private void addRecipient_Click(object sender, RoutedEventArgs e)
+        {
+            new Recipients_Window(recipientsListBox).Show();
+        }
+
+        private void removeRecipient_Click(object sender, RoutedEventArgs e)
+        {
+            List<User> selectedItems = recipientsListBox.SelectedItems.Cast<User>().ToList();
+
+            foreach (User item in selectedItems)
+            {
+                recipientsListBox.Items.Remove(item);
             }
         }
     }
