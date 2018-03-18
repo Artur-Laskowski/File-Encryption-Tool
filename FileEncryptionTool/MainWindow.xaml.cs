@@ -84,16 +84,13 @@ namespace FileEncryptionTool
                         bytes.Add(Byte.Parse(v));
                 }
             }
-
-
-            rng_result.Text = bytes.ToString();
         }
 
         private byte[] GetAnuBytes(int length)
         {
             byte[] bytes = new byte[length];
             for (int i = 0; i < length; i++)
-                bytes[i] = (byte)(i + 1);
+                bytes[i] = (byte)((i + 1) % 10);
             return bytes;
             using (var wc = new WebClient())
             {
@@ -114,70 +111,17 @@ namespace FileEncryptionTool
             }
         }
 
-        private byte GetSelectedCipherMode()
+        private CipherMode GetSelectedCipherMode()
         {
             if (modeECB.IsChecked == true)
-                return 2;
+                return CipherMode.ECB;
             if (modeCBC.IsChecked == true)
-                return 1;
+                return CipherMode.CBC;
             if (modeCFB.IsChecked == true)
-                return 4;
+                return CipherMode.CFB;
             if (modeOFB.IsChecked == true)
-                return 3;
-            return 2;
-        }
-
-        private void InitializeEncryption()
-        {
-            CipherMode cipherMode = (CipherMode)GetSelectedCipherMode();
-
-            _algorithmName = "AES";
-            _keySize = 256;
-            _blockSize = Int32.Parse(blockSize_TextBox.Text);
-            _cipherModeName = cipherMode.ToString();
-            _ivName = "ivName";
-            _users = new List<User>
-            {
-                new User("user@gmail.com", "123123123123123"),
-                new User("user2@gmail.com", "123123123131321")
-            };
-
-            FileEncryption.mode = cipherMode;
-            FileEncryption.keySize = _keySize;
-            FileEncryption.key = GetAnuBytes(_keySize >> 3);
-            FileEncryption.bufferSize = 1 << 15;
-            FileEncryption.blockSize = _blockSize;
-            FileEncryption.iv = GetAnuBytes(_blockSize >> 3);
-
-
-            //TODO add error checking for block below
-            XDocument xdoc = new XDocument(
-                new XElement("EncryptedFileHeader",
-                    new XElement("Algorithm", _algorithmName),
-                    new XElement("KeySize", _keySize.ToString()),
-                    new XElement("BlockSize", _blockSize.ToString()),
-                    new XElement("CipherMode", _cipherModeName),
-                    new XElement("IV", _ivName),
-                    new XElement("ApprovedUsers",
-                        from user in _users
-                        select new XElement("User",
-                            new XElement("Email", user.Email),
-                            //TODO add sessionKey encryption
-                            //new XElement("SessionKey", RSA.encrypt(FileEncryption.key, user.getPublicKey()))
-                            new XElement("SessionKey", FileEncryption.key)
-                        )
-                    )
-                )
-            );
-
-            using (StreamWriter writer = new StreamWriter(outputFile_TextBox.Text, false))
-            {
-                xdoc.Save(writer);
-                writer.Write("\r\nDATA\r\n");
-            }
-
-            if (FileEncryption.EncryptFile(inputFile_TextBox.Text, outputFile_TextBox.Text))
-                MessageBox.Show("Pomyślnie zapisano do pliku");
+                return CipherMode.OFB;
+            return CipherMode.ECB;
         }
 
         private bool ValidatePaths()
@@ -261,7 +205,27 @@ namespace FileEncryptionTool
             if (!ValidatePaths())
                 return;
 
-            InitializeEncryption();
+            try
+            {
+                //TODO read target users from GUI
+                FileEncryption.targetUsers = new List<User>
+                {
+                    new User("user@gmail.com", "123123123123123"),
+                    new User("user2@gmail.com", "123123123131321")
+                };
+                FileEncryption.mode = GetSelectedCipherMode();
+                FileEncryption.keySize = Int32.Parse(keySize_TextBox.Text); //TODO handle incorrect values for every parse
+                FileEncryption.key = GetAnuBytes(FileEncryption.keySize >> 3); //TODO use proper RNG generator
+                FileEncryption.bufferSize = 1 << 15;
+                FileEncryption.blockSize = Int32.Parse(blockSize_TextBox.Text);
+                FileEncryption.iv = GetAnuBytes(FileEncryption.blockSize >> 3);
+
+                FileEncryption.InitializeEncryption(inputFile_TextBox.Text, outputFile_TextBox.Text);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Wystąpił błąd przy szyfrowaniu");
+            }
         }
 
         private void modeRadio_Checked(object sender, RoutedEventArgs e)
@@ -272,54 +236,27 @@ namespace FileEncryptionTool
 
             String text = String.Format("{0} - {1}", aesHelper.LegalBlockSizes[0].MinSize, aesHelper.LegalBlockSizes[0].MaxSize);
             if (aesHelper.LegalBlockSizes[0].MinSize == aesHelper.LegalBlockSizes[0].MaxSize)
-                text = aesHelper.LegalBlockSizes[0].MinSize.ToString();
+                text = String.Format("{0}", aesHelper.LegalBlockSizes[0].MinSize.ToString());
 
-            validBlockSize_Label.Content = text;
+            //validBlockSize_Label.Content = text;
         }
 
-        private void validateFile_Button_Click(object sender, RoutedEventArgs e)
+        private void DecryptFile_Button_Click(object sender, RoutedEventArgs e)
         {
             if (!ValidatePaths())
                 return;
-            
 
-            using (MemoryStream ms = new MemoryStream())
+            try
             {
-                using (StreamReader s = File.OpenText(inputFile_TextBox.Text))
-                {
-                    while (!s.EndOfStream)
-                    {
-                        var l = s.ReadLine();
-                        if (l.Contains("DATA"))
-                        {
-                            break;
-                        }
-                        ms.Write(Encoding.ASCII.GetBytes(l.ToCharArray()), 0, l.Length);
-                        
-                    }
-                }
-                ms.Position = 0;
-                XDocument xdoc = XDocument.Load(ms);
-                var root = xdoc.Element("EncryptedFileHeader");
-                _algorithmName = root.Element("Algorithm").Value;
-                _keySize = Int32.Parse(root.Element("KeySize").Value);
-                _blockSize = Int32.Parse(root.Element("BlockSize").Value);
-                _cipherModeName = root.Element("CipherMode").Value;
-                _ivName = root.Element("IV").Value;
-
-                var usersAndKeys = root.Element("ApprovedUsers").Elements().Select(element => new Tuple<string, string>(element.Element("Email").Value, element.Element("SessionKey").Value)).ToList();
+                FileEncryption.bufferSize = 1 << 15;
+                //TODO ask for password
+                FileEncryption.key = GetAnuBytes(32);
+                FileEncryption.InitializeDecryption(inputFile_TextBox.Text, outputFile_TextBox.Text);
             }
-
-            CipherMode cipherMode = (CipherMode)GetSelectedCipherMode();
-            FileEncryption.mode = cipherMode;
-            FileEncryption.keySize = _keySize;
-            FileEncryption.key = GetAnuBytes(_keySize >> 3);
-            FileEncryption.bufferSize = 1 << 15;
-            FileEncryption.blockSize = _blockSize;
-            FileEncryption.iv = GetAnuBytes(_blockSize >> 3);
-
-            if (FileEncryption.DecryptFile(inputFile_TextBox.Text, outputFile_TextBox.Text))
-                MessageBox.Show("Pomyślnie rozszyfrowano plik");
+            catch (Exception ex)
+            {
+                MessageBox.Show("Wystąpił błąd przy deszyfracji");
+            }
         }
     }
 }
