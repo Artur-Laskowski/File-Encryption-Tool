@@ -10,21 +10,24 @@
         <TextBox x:Name="inputFile_TextBox" HorizontalAlignment="Left" Height="23" Margin="165,10,0,0" VerticalAlignment="Top" Width="262"/>
         <Label Content="Ścieżka pliku wejściowego:" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
         <Button Content="wybierz..." HorizontalAlignment="Left" Margin="432,11,0,0" VerticalAlignment="Top" Width="75" Click="inputFile_Button_Click" Height="23"/>
-        <RadioButton x:Name="modeECB" Content="ECB" HorizontalAlignment="Left" Margin="22,75,0,0" VerticalAlignment="Top" IsChecked="True"/>
-        <RadioButton x:Name="modeCBC" Content="CBC" HorizontalAlignment="Left" Margin="22,95,0,0" VerticalAlignment="Top"/>
-        <RadioButton x:Name="modeCFB" Content="CFB" HorizontalAlignment="Left" Margin="22,115,0,0" VerticalAlignment="Top"/>
-        <RadioButton x:Name="modeOFB" Content="OFB" HorizontalAlignment="Left" Margin="22,135,0,0" VerticalAlignment="Top"/>
+        <RadioButton x:Name="modeECB" Content="ECB" HorizontalAlignment="Left" Margin="22,75,0,0" VerticalAlignment="Top" IsChecked="True" Checked="modeRadio_Checked"/>
+        <RadioButton x:Name="modeCBC" Content="CBC" HorizontalAlignment="Left" Margin="22,95,0,0" VerticalAlignment="Top" Checked="modeRadio_Checked"/>
+        <RadioButton x:Name="modeCFB" Content="CFB" HorizontalAlignment="Left" Margin="22,115,0,0" VerticalAlignment="Top" Checked="modeRadio_Checked"/>
+        <RadioButton x:Name="modeOFB" Content="OFB" HorizontalAlignment="Left" Margin="22,135,0,0" VerticalAlignment="Top" Checked="modeRadio_Checked"/>
         <TextBox x:Name="outputFile_TextBox" HorizontalAlignment="Left" Height="23" Margin="165,286,0,0" VerticalAlignment="Top" Width="262"/>
         <Label Content="Ścieżka pliku wynikowego:" HorizontalAlignment="Left" Margin="10,283,0,0" VerticalAlignment="Top"/>
         <Button x:Name="outputButton" Content="wybierz..." HorizontalAlignment="Left" Margin="432,286,0,0" VerticalAlignment="Top" Width="75" Click="outputFile_Button_Click" Height="23"/>
         <GroupBox Header="Tryb szyfrowania" HorizontalAlignment="Left" Height="112" Margin="10,47,0,0" VerticalAlignment="Top" Width="111"/>
-        <GroupBox Header="Długość bloku" HorizontalAlignment="Left" Height="63" Margin="138,47,0,0" VerticalAlignment="Top" Width="100">
+        <GroupBox Header="Długość bloku" HorizontalAlignment="Left" Height="83" Margin="138,47,0,0" VerticalAlignment="Top" Width="100">
             <TextBox x:Name="blockSize_TextBox" HorizontalAlignment="Left" Height="23" Margin="10,10,0,0" TextWrapping="Wrap" Text="128" VerticalAlignment="Top" Width="70"/>
         </GroupBox>
         <Button x:Name="generateRandomNumber_Button" Content="generuj klucz" HorizontalAlignment="Left" Margin="268,47,0,0" VerticalAlignment="Top" Width="83" Height="32" Click="generateRandomNumber_Button_Click"/>
         <TextBlock x:Name="rng_result" HorizontalAlignment="Left" Margin="388,47,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" Height="208" Width="119"/>
         <Button x:Name="encryptFile_Button" Content="Szyfruj" HorizontalAlignment="Left" Margin="268,87,0,0" VerticalAlignment="Top" Width="83" Height="32" Click="encryptFile_Button_Click"/>
         <ProgressBar x:Name="encryptionProgressBar" HorizontalAlignment="Left" Height="16" Margin="22,314,0,0" VerticalAlignment="Top" Width="485"/>
+        <Label x:Name="validBlockSize_Label" Content="128" HorizontalAlignment="Left" Margin="148,97,0,0" VerticalAlignment="Top" Width="75"/>
+        <Button x:Name="validateFile_Button" Content="Sprawdź plik" HorizontalAlignment="Left" Margin="268,130,0,0" VerticalAlignment="Top" Width="83" Height="29" Click="validateFile_Button_Click"/>
+        <Button x:Name="decryptFile_Button" Content="Deszyfruj" HorizontalAlignment="Left" Margin="268,164,0,0" VerticalAlignment="Top" Width="83" Height="31" IsEnabled="False"/>
 
     </Grid>
 </Window>

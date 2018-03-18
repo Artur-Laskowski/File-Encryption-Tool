@@ -12,6 +12,7 @@ using System.Text.RegularExpressions;
 using System.ComponentModel;
 using System.Windows.Threading;
 using System.Security.Cryptography;
+using System.Text;
 
 namespace FileEncryptionTool
 {
@@ -30,6 +31,8 @@ namespace FileEncryptionTool
 
         private List<User> _users = User.loadUsers();
 
+        Aes aesHelper = Aes.Create();
+
         public MainWindow()
         {
             InitializeComponent();
@@ -39,6 +42,7 @@ namespace FileEncryptionTool
                     DispatcherPriority.Background
                 )
             );
+            
         }
 
         private void Update_RNG(List<Point> coords)
@@ -123,6 +127,115 @@ namespace FileEncryptionTool
             return 2;
         }
 
+        private void InitializeEncryption()
+        {
+            CipherMode cipherMode = (CipherMode)GetSelectedCipherMode();
+
+            _algorithmName = "AES";
+            _keySize = 256;
+            _blockSize = Int32.Parse(blockSize_TextBox.Text);
+            _cipherModeName = cipherMode.ToString();
+            _ivName = "ivName";
+            _users = new List<User>
+            {
+                new User("user@gmail.com", "123123123123123"),
+                new User("user2@gmail.com", "123123123131321")
+            };
+
+            FileEncryption.mode = cipherMode;
+            FileEncryption.keySize = _keySize;
+            FileEncryption.key = GetAnuBytes(_keySize >> 3);
+            FileEncryption.bufferSize = 1 << 15;
+            FileEncryption.blockSize = _blockSize;
+            FileEncryption.iv = GetAnuBytes(_blockSize >> 3);
+
+
+            //TODO add error checking for block below
+            XDocument xdoc = new XDocument(
+                new XElement("EncryptedFileHeader",
+                    new XElement("Algorithm", _algorithmName),
+                    new XElement("KeySize", _keySize.ToString()),
+                    new XElement("BlockSize", _blockSize.ToString()),
+                    new XElement("CipherMode", _cipherModeName),
+                    new XElement("IV", _ivName),
+                    new XElement("ApprovedUsers",
+                        from user in _users
+                        select new XElement("User",
+                            new XElement("Email", user.Email),
+                            //TODO add sessionKey encryption
+                            //new XElement("SessionKey", RSA.encrypt(FileEncryption.key, user.getPublicKey()))
+                            new XElement("SessionKey", FileEncryption.key)
+                        )
+                    )
+                )
+            );
+
+            using (StreamWriter writer = new StreamWriter(outputFile_TextBox.Text, false))
+            {
+                xdoc.Save(writer);
+                writer.Write("\r\nDATA\r\n");
+            }
+
+            if (FileEncryption.EncryptFile(inputFile_TextBox.Text, outputFile_TextBox.Text))
+                MessageBox.Show("Pomyślnie zapisano do pliku");
+        }
+
+        private bool ValidatePaths()
+        {
+            if (string.IsNullOrEmpty(inputFile_TextBox.Text))
+            {
+                MessageBox.Show("Nie wybrano pliku wejściowego!");
+                return false;
+            }
+            try { Path.GetFullPath(inputFile_TextBox.Text); }
+            catch
+            {
+                MessageBox.Show("Folder źródłowy nie istnieje!");
+                return false;
+            }
+            if (!File.Exists(inputFile_TextBox.Text))
+            {
+                MessageBox.Show("Plik źródłowy nie istnieje!");
+                return false;
+            }
+
+            string outputPath;
+            try { outputPath = inputFile_TextBox.Text.Substring(0, outputFile_TextBox.Text.LastIndexOf("\\")); }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Niepoprawna ścieżka pliku docelowego!");
+                return false;
+            }
+            try { Path.GetFullPath(outputFile_TextBox.Text); }
+            catch
+            {
+                MessageBox.Show("Folder docelowy nie istnieje!");
+                return false;
+            }
+
+            string pathAndFileName = outputFile_TextBox.Text;
+
+            string path = pathAndFileName.Substring(0, pathAndFileName.LastIndexOf("\\"));
+            try
+            {
+                if (!Directory.Exists(path))
+                    Directory.CreateDirectory(path);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Nie można utworzyć folderu docelowego!");
+                return false;
+            }
+
+            if (inputFile_TextBox.Text.ToLower() == outputFile_TextBox.Text.ToLower())
+            {
+                MessageBox.Show("Plik źródłowy i docelowy nie mogą być takie same!");
+                return false;
+            }
+
+            return true;
+        }
+
         private void inputFile_Button_Click(object sender, RoutedEventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
@@ -145,49 +258,59 @@ namespace FileEncryptionTool
         
         private void encryptFile_Button_Click(object sender, RoutedEventArgs e)
         {
-            if (string.IsNullOrEmpty(inputFile_TextBox.Text))
-            {
-                MessageBox.Show("Nie wybrano pliku wejściowego!");
+            if (!ValidatePaths())
                 return;
-            }
-            try { Path.GetFullPath(inputFile_TextBox.Text); }
-            catch
-            {
-                MessageBox.Show("Folder źródłowy nie istnieje!");
-                return;
-            }
-            if (!File.Exists(inputFile_TextBox.Text))
-            {
-                MessageBox.Show("Plik źródłowy nie istnieje!");
-                return;
-            }
 
-            string outputPath;
-            try { outputPath = inputFile_TextBox.Text.Substring(0, outputFile_TextBox.Text.LastIndexOf("\\")); }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Niepoprawna ścieżka pliku docelowego!");
+            InitializeEncryption();
+        }
+
+        private void modeRadio_Checked(object sender, RoutedEventArgs e)
+        {
+            if (validBlockSize_Label == null)
                 return;
-            }
-            try { Path.GetFullPath(outputFile_TextBox.Text); }
-            catch
-            {
-                MessageBox.Show("Folder docelowy nie istnieje!");
+            aesHelper.Mode = (CipherMode)GetSelectedCipherMode();
+
+            String text = String.Format("{0} - {1}", aesHelper.LegalBlockSizes[0].MinSize, aesHelper.LegalBlockSizes[0].MaxSize);
+            if (aesHelper.LegalBlockSizes[0].MinSize == aesHelper.LegalBlockSizes[0].MaxSize)
+                text = aesHelper.LegalBlockSizes[0].MinSize.ToString();
+
+            validBlockSize_Label.Content = text;
+        }
+
+        private void validateFile_Button_Click(object sender, RoutedEventArgs e)
+        {
+            if (!ValidatePaths())
                 return;
+            
+
+            using (MemoryStream ms = new MemoryStream())
+            {
+                using (StreamReader s = File.OpenText(inputFile_TextBox.Text))
+                {
+                    while (!s.EndOfStream)
+                    {
+                        var l = s.ReadLine();
+                        if (l.Contains("DATA"))
+                        {
+                            break;
+                        }
+                        ms.Write(Encoding.ASCII.GetBytes(l.ToCharArray()), 0, l.Length);
+                        
+                    }
+                }
+                ms.Position = 0;
+                XDocument xdoc = XDocument.Load(ms);
+                var root = xdoc.Element("EncryptedFileHeader");
+                _algorithmName = root.Element("Algorithm").Value;
+                _keySize = Int32.Parse(root.Element("KeySize").Value);
+                _blockSize = Int32.Parse(root.Element("BlockSize").Value);
+                _cipherModeName = root.Element("CipherMode").Value;
+                _ivName = root.Element("IV").Value;
+
+                var usersAndKeys = root.Element("ApprovedUsers").Elements().Select(element => new Tuple<string, string>(element.Element("Email").Value, element.Element("SessionKey").Value)).ToList();
             }
 
             CipherMode cipherMode = (CipherMode)GetSelectedCipherMode();
-
-            _algorithmName = "AES";
-            _keySize = 256;
-            _blockSize = Int32.Parse(blockSize_TextBox.Text);
-            _cipherModeName = cipherMode.ToString();
-            _ivName = "ivName";
-            _users = new List<User>
-            {
-                new User("user@gmail.com", "123123123123123")
-            };
-
             FileEncryption.mode = cipherMode;
             FileEncryption.keySize = _keySize;
             FileEncryption.key = GetAnuBytes(_keySize >> 3);
@@ -195,48 +318,8 @@ namespace FileEncryptionTool
             FileEncryption.blockSize = _blockSize;
             FileEncryption.iv = GetAnuBytes(_blockSize >> 3);
 
-
-            //TODO add error checking for block below
-            XDocument xdoc = new XDocument(
-                new XElement("EncryptedFileHeader",
-                    new XElement("Algorightm", _algorithmName),
-                    new XElement("KeySize", _keySize.ToString()),
-                    new XElement("BlockSize", _blockSize.ToString()),
-                    new XElement("CipherMode", _cipherModeName),
-                    new XElement("IV", _ivName),
-                    new XElement("ApprovedUsers",
-                        from user in _users
-                        select new XElement("User",
-                            new XElement("Email", user.Email)
-                            //TODO add sessionKey encryption
-                            //new XElement("SessionKey", RSA.encrypt(sessionKey, user.getPublicKey()))
-                        )
-                    )
-                )
-            );
-
-            string pathAndFileName = outputFile_TextBox.Text;
-            
-            string path = pathAndFileName.Substring(0, pathAndFileName.LastIndexOf("\\"));
-            try
-            {
-                if (!Directory.Exists(path))
-                    Directory.CreateDirectory(path);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Nie można utworzyć folderu docelowego!");
-                return;
-            }
-
-            using (StreamWriter writer = new StreamWriter(pathAndFileName, false))
-            {
-                xdoc.Save(writer);
-                writer.Write("\nDATA\n");
-            }
-
-            if (FileEncryption.EncryptFile(inputFile_TextBox.Text, outputFile_TextBox.Text))
-                MessageBox.Show("Pomyślnie zapisano do pliku");
+            if (FileEncryption.DecryptFile(inputFile_TextBox.Text, outputFile_TextBox.Text))
+                MessageBox.Show("Pomyślnie rozszyfrowano plik");
         }
     }
 }

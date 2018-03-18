@@ -79,10 +79,11 @@ namespace FileEncryptionTool
                     aesAlg.Key = key;
                     aesAlg.IV = iv;
 
-                    MessageBox.Show(String.Format("Starting encryption, params:\nkeySize: {0}\nblockSize: {1}\nmode: {2}", keySize, blockSize, mode.ToString()));
+                    MessageBox.Show(String.Format("Starting decryption, params:\nkeySize: {0}\nblockSize: {1}\nmode: {2}", keySize, blockSize, mode.ToString()));
 
                     ICryptoTransform decryptor = aesAlg.CreateDecryptor(aesAlg.Key, aesAlg.IV);
                     byte[] buffer = new byte[bufferSize];
+
                     using (Stream output = File.Open(outputFile, FileMode.Create))
                     {
                         using (CryptoStream cs = new CryptoStream(output, decryptor, CryptoStreamMode.Write))
@@ -91,6 +92,20 @@ namespace FileEncryptionTool
                             {
                                 using (Stream input = File.OpenRead(inputFile))
                                 {
+                                    bool found = false;
+                                    while (!found)
+                                    {
+                                        if (input.ReadByte() == 'D' &&
+                                            input.ReadByte() == 'A' &&
+                                            input.ReadByte() == 'T' &&
+                                            input.ReadByte() == 'A' &&
+                                            input.ReadByte() == '\r' &&
+                                            input.ReadByte() == '\n'
+                                            )
+                                        {
+                                            found = true;
+                                        }
+                                    }
                                     int count = 0;
                                     double i = 0;
                                     long totalSize = input.Length / bufferSize;
