@@ -22,7 +22,7 @@ namespace FileEncryptionTool
         }
 
 
-        private static bool _doOAEPPadding = false;
+        private static bool _doOAEPPadding = true;
 
 
         public static byte[] encrypt(byte[] content, Key publicKey)
@@ -41,17 +41,20 @@ namespace FileEncryptionTool
             Console.WriteLine(Encoding.UTF8.GetString(content));
             Console.WriteLine(Encoding.UTF8.GetString(encoded));
 
-            return Encoding.UTF32.GetString(encoded);
+            return Convert.ToBase64String(encoded);
         }
 
 
-        public static byte[] decryptFromString(byte[] content, Key privateKey)
+        public static byte[] decryptFromString(string content, Key privateKey) 
         {
+
+            byte[] contentBytes = Convert.FromBase64String(content);
+
             using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider())
             {
                 rsa.FromXmlString(privateKey.ContentXML);
 
-                return rsa.Decrypt(content, _doOAEPPadding);
+                return rsa.Decrypt(contentBytes, _doOAEPPadding);
             }
         }
 
@@ -107,7 +110,7 @@ namespace FileEncryptionTool
             // byte[] decryptedContent = AES.ECB.decrypt(encryptedContent, passwordHash);
             // return new Key(Encoding.UTF8.GetString(decryptedContent))
 
-            return new Key(Encoding.UTF8.GetString(encryptedContent));
+            return new Key(File.ReadAllText(path));
         }
 
 

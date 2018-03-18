@@ -7,6 +7,7 @@ using System.Security.Cryptography;
 using System.IO;
 using System.Windows;
 using System.Xml.Linq;
+using System.Windows.Controls;
 
 namespace FileEncryptionTool
 {
@@ -62,7 +63,44 @@ namespace FileEncryptionTool
                 MessageBox.Show("Pomyślnie zapisano do pliku");
         }
 
-        static public void InitializeDecryption(string inputFile, string outputFile)
+        static public void lodaPossibleRecipients(string inputFile, ListBox recipients)
+        {
+            //read the header to memory
+            using (MemoryStream ms = new MemoryStream())
+            {
+                using (StreamReader s = File.OpenText(inputFile))
+                {
+                    while (!s.EndOfStream)
+                    {
+                        var l = s.ReadLine();
+                        if (l.Contains("DATA"))
+                            break;
+
+                        ms.Write(Encoding.ASCII.GetBytes(l.ToCharArray()), 0, l.Length);
+                    }
+                }
+
+                //write settings from header
+                ms.Position = 0;
+                XDocument xdoc = XDocument.Load(ms);
+                var root = xdoc.Element("EncryptedFileHeader");
+
+                List<string> emails = root.Element("ApprovedUsers").Elements().Select(element => element.Element("Email").Value).ToList();
+                Dictionary<string, User> allUsers = User.loadUsers().ToDictionary(x => x.Email, x => x);
+                
+              
+                foreach (var email in emails)
+                {
+                    if (allUsers.ContainsKey(email))
+                    {
+                        recipients.Items.Add(allUsers[email]);
+                    }
+                }
+            }
+        }
+
+
+        static public void InitializeDecryption(string inputFile, string outputFile, User currentUser, string password)
         {
             //read the header to memory
             using (MemoryStream ms = new MemoryStream())
@@ -91,15 +129,15 @@ namespace FileEncryptionTool
 
                 //TODO add searching the user in this list and decrypting the session key
                 var usersAndKeys = root.Element("ApprovedUsers").Elements().Select(element => new Tuple<string, string>(element.Element("Email").Value, element.Element("SessionKey").Value)).ToList();
-                /*
+               
                 foreach (var user in usersAndKeys)
                 {
                     if (user.Item1 == currentUser.Email)
                     {
-                        key = RSA.decrypt(user.Item2.Select(s => Byte.Parse(s.ToString())).ToArray(), currentUser.getPrivateKey(password));
+                        key = RSA.decryptFromString(user.Item2, currentUser.getPrivateKey(password));
                         break;
                     }
-                }*/
+                }
             }
             
 

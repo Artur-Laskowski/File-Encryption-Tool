@@ -196,6 +196,23 @@ namespace FileEncryptionTool
                 outputFile_TextBox.Text = openFileDialog.FileName;
         }
 
+        private void decryptionInputButton_Click(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            if (openFileDialog.ShowDialog() == true)
+            {
+                decryptionInputFileBox.Text = openFileDialog.FileName;
+                FileEncryption.lodaPossibleRecipients(openFileDialog.FileName, decryptionRecipientsList);
+            }
+        }
+
+        private void decryptionOutputButton_Click(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            if (openFileDialog.ShowDialog() == true)
+                decryptionOutputFileBox.Text = openFileDialog.FileName;
+        }
+
         private void generateRandomNumber_Button_Click(object sender, RoutedEventArgs e)
         {
             RNG_Window win2 = new RNG_Window(Update_RNG);
@@ -240,15 +257,19 @@ namespace FileEncryptionTool
 
         private void DecryptFile_Button_Click(object sender, RoutedEventArgs e)
         {
-            if (!ValidatePaths())
-                return;
+            //if (!ValidatePaths())
+               // return;
 
             try
             {
                 FileEncryption.bufferSize = 1 << 15;
-                //TODO ask for password
-                FileEncryption.key = GetAnuBytes(32);
-                FileEncryption.InitializeDecryption(inputFile_TextBox.Text, outputFile_TextBox.Text);
+                //FileEncryption.key = GetAnuBytes(32);
+
+
+                User selectedUser = (User)decryptionRecipientsList.SelectedItem;
+                string password = decryptionPassword.Password;
+                
+                FileEncryption.InitializeDecryption(decryptionInputFileBox.Text, decryptionOutputFileBox.Text, selectedUser, password);
             }
             catch (Exception ex)
             {
@@ -320,5 +341,7 @@ namespace FileEncryptionTool
                 recipientsListBox.Items.Remove(item);
             }
         }
+
+        
     }
 }

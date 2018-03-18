@@ -29,7 +29,7 @@
                     <Button x:Name="encryptFile_Button" Content="Szyfruj" HorizontalAlignment="Left" Margin="268,87,0,0" VerticalAlignment="Top" Width="83" Height="32" Click="encryptFile_Button_Click"/>
                     <ProgressBar x:Name="encryptionProgressBar" HorizontalAlignment="Left" Height="16" Margin="22,314,0,0" VerticalAlignment="Top" Width="485"/>
                     <Label x:Name="validBlockSize_Label" Content="" HorizontalAlignment="Left" Margin="148,97,0,0" VerticalAlignment="Top" Width="75"/>
-                    <Button x:Name="validateFile_Button" Content="Deszyfruj" HorizontalAlignment="Left" Margin="268,130,0,0" VerticalAlignment="Top" Width="83" Height="29" Click="DecryptFile_Button_Click"/>
+
                     <GroupBox Header="Długość klucza" HorizontalAlignment="Left" Height="76" Margin="138,136,0,0" VerticalAlignment="Top" Width="100">
                         <TextBox x:Name="keySize_TextBox" HorizontalAlignment="Left" Height="23" Margin="10,10,0,0" TextWrapping="Wrap" Text="256" VerticalAlignment="Top" Width="70"/>
                     </GroupBox>
@@ -41,7 +41,20 @@
                 </Grid>
             </TabItem>
             <TabItem Header="Deszyforowanie">
-                <Grid Background="#FFE5E5E5"/>
+                <Grid Background="#FFE5E5E5">
+                    <Label x:Name="label3" Content="Ścieżka pliku wejściowego:" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
+                    <TextBox x:Name="decryptionInputFileBox" HorizontalAlignment="Left" Height="23" Margin="166,13,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="261"/>
+                    <Button x:Name="decryptionInputButton" Content="wybierz..." HorizontalAlignment="Left" Margin="442,15,0,0" VerticalAlignment="Top" Width="75" Click="decryptionInputButton_Click"/>
+                    <Label x:Name="label4" Content="Ścieżka pliku wynikowego:" HorizontalAlignment="Left" Margin="11,52,0,0" VerticalAlignment="Top"/>
+                    <TextBox x:Name="decryptionOutputFileBox" HorizontalAlignment="Left" Height="23" Margin="166,52,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="261"/>
+                    <Button x:Name="decryptionOutputButton" Content="wybierz..." HorizontalAlignment="Left" Margin="442,52,0,0" VerticalAlignment="Top" Width="75" Click="decryptionOutputButton_Click"/>
+                    <Button x:Name="validateFile_Button" Content="Deszyfruj" HorizontalAlignment="Left" Margin="344,238,0,0" VerticalAlignment="Top" Width="83" Height="29" Click="DecryptFile_Button_Click"/>
+                    <GroupBox x:Name="groupBox1" Header="Adresaci pliku" HorizontalAlignment="Left" Margin="59,98,0,0" VerticalAlignment="Top" Height="169" Width="159">
+                        <ListBox x:Name="decryptionRecipientsList" HorizontalAlignment="Left" Height="125" Margin="0,21,-2.333,0" VerticalAlignment="Top" Width="149"/>
+                    </GroupBox>
+                    <PasswordBox x:Name="decryptionPassword" HorizontalAlignment="Left" Margin="326,189,0,0" VerticalAlignment="Top" Width="115" Height="23"/>
+                    <Label x:Name="label5" Content="Wprowadź hasło dla wybranego użtkownika" HorizontalAlignment="Left" Margin="265,147,0,0" VerticalAlignment="Top"/>
+                </Grid>
             </TabItem>
             <TabItem Header="Użytkownicy">
                 <Grid Background="#FFE5E5E5">
@@ -51,7 +64,7 @@
                     <Label x:Name="label2" Content="Powtórz hasło:" HorizontalAlignment="Left" Margin="30,108,0,0" VerticalAlignment="Top"/>
                     <PasswordBox x:Name="passwordBoxRepeat" HorizontalAlignment="Left" Margin="132,111,0,0" VerticalAlignment="Top" Width="120" Height="23" PasswordChanged="passwordBoxRepeat_PasswordChanged"/>
                     <PasswordBox x:Name="passwordBox" HorizontalAlignment="Left" Margin="132,72,0,0" VerticalAlignment="Top" Width="120" Height="23" RenderTransformOrigin="-1.358,-0.971" PasswordChanged="passwordBox_PasswordChanged"/>
-                    <Button x:Name="button" Content="Dodaj" HorizontalAlignment="Left" Margin="30,152,0,0" VerticalAlignment="Top" Width="75" Click="AddUser_Button_Click"/>
+                    <Button x:Name="button" Content="Dodaj" HorizontalAlignment="Left" Margin="30,162,0,0" VerticalAlignment="Top" Width="75" Click="AddUser_Button_Click"/>
                     <Label x:Name="passwordError" Content="" HorizontalAlignment="Left" Margin="132,95,0,0" VerticalAlignment="Top" Width="325" Foreground="#FFFC0000" FontSize="10" Height="16" Padding="0"/>
                     <Label x:Name="passwordReapetError" Content="" HorizontalAlignment="Left" Margin="132,134,0,0" VerticalAlignment="Top" Width="325" Foreground="Red" FontSize="10" Height="14" Padding="0"/>
                 </Grid>
