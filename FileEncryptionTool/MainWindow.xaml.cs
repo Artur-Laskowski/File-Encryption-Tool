@@ -126,60 +126,36 @@ namespace FileEncryptionTool
             return CipherMode.ECB;
         }
 
-        private bool ValidatePaths()
+        private string ValidateInputPath(string path)
         {
-            if (string.IsNullOrEmpty(inputFile_TextBox.Text))
-            {
-                MessageBox.Show("Nie wybrano pliku wejściowego!");
-                return false;
-            }
-            try { Path.GetFullPath(inputFile_TextBox.Text); }
-            catch
-            {
-                MessageBox.Show("Folder źródłowy nie istnieje!");
-                return false;
-            }
-            if (!File.Exists(inputFile_TextBox.Text))
-            {
-                MessageBox.Show("Plik źródłowy nie istnieje!");
-                return false;
-            }
+            if (String.IsNullOrEmpty(path)) return "Nie wybrano pliku wejściowego!";
+            if (!File.Exists(path)) return "Plik źródłowy nie istnieje!";
+            return null;
+        }
 
-            string outputPath;
-            try { outputPath = inputFile_TextBox.Text.Substring(0, outputFile_TextBox.Text.LastIndexOf("\\")); }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Niepoprawna ścieżka pliku docelowego!");
-                return false;
-            }
-            try { Path.GetFullPath(outputFile_TextBox.Text); }
-            catch
-            {
-                MessageBox.Show("Folder docelowy nie istnieje!");
-                return false;
-            }
+        private string validateOutputPath(string path)
+        {
+            if (String.IsNullOrEmpty(path)) return "Nie wybrano pliku wynikowego!";
+            if (File.Exists(path)) return "Plik docelowy już istnieje!";
+            if (!Path.IsPathRooted(path)) return "Niepoprawna ścieżka pliku docelowego!";
 
-            string pathAndFileName = outputFile_TextBox.Text;
+            try { Path.GetFullPath(path); }
+            catch { return "Folder docelowy nie istnieje!"; }
 
-            string path = pathAndFileName.Substring(0, pathAndFileName.LastIndexOf("\\"));
+            string pathAndFileName = path;
+
+            string path2 = pathAndFileName.Substring(0, pathAndFileName.LastIndexOf("\\"));
             try
             {
-                if (!Directory.Exists(path))
-                    Directory.CreateDirectory(path);
+                if (!Directory.Exists(path2))
+                    Directory.CreateDirectory(path2);
             }
-            catch (Exception ex)
+            catch
             {
-                MessageBox.Show("Nie można utworzyć folderu docelowego!");
-                return false;
+                return "Nie można utworzyć folderu docelowego!";
             }
 
-            if (inputFile_TextBox.Text.ToLower() == outputFile_TextBox.Text.ToLower())
-            {
-                MessageBox.Show("Plik źródłowy i docelowy nie mogą być takie same!");
-                return false;
-            }
-
-            return true;
+            return null;
         }
 
         private void inputFile_Button_Click(object sender, RoutedEventArgs e)
@@ -221,8 +197,20 @@ namespace FileEncryptionTool
         
         private void encryptFile_Button_Click(object sender, RoutedEventArgs e)
         {
-            if (!ValidatePaths())
+            string inputFileError = ValidateInputPath(inputFile_TextBox.Text);
+            string outputFileError = validateOutputPath(outputFile_TextBox.Text);
+
+            if(inputFileError != null)
+            {
+                MessageBox.Show(inputFileError);
                 return;
+            }
+
+            if(outputFileError != null)
+            {
+                MessageBox.Show(outputFileError);
+                return;
+            }
 
             try
             {
@@ -257,8 +245,20 @@ namespace FileEncryptionTool
 
         private void DecryptFile_Button_Click(object sender, RoutedEventArgs e)
         {
-            //if (!ValidatePaths())
-               // return;
+            string inputFileError = ValidateInputPath(decryptionInputFileBox.Text);
+            string outputFileError = validateOutputPath(decryptionOutputFileBox.Text);
+
+            if (inputFileError != null)
+            {
+                MessageBox.Show(inputFileError);
+                return;
+            }
+
+            if (outputFileError != null)
+            {
+                MessageBox.Show(outputFileError);
+                return;
+            }
 
             try
             {
@@ -290,7 +290,7 @@ namespace FileEncryptionTool
             string passwordError = User.validatePassword(_password);
             string repeatError = validateRepeatedPassoword();
 
-            if(passwordError == null && repeatError == null)
+            if(passwordError == null && repeatError == null && !String.IsNullOrEmpty(_email))
             {
                 new User(_email, _password);
                 MessageBox.Show("Dodano nowego użytkownika: " + _email);

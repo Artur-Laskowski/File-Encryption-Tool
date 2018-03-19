@@ -65,6 +65,8 @@ namespace FileEncryptionTool
 
         static public void lodaPossibleRecipients(string inputFile, ListBox recipients)
         {
+            bool isSupportedFile = false;
+
             //read the header to memory
             using (MemoryStream ms = new MemoryStream())
             {
@@ -74,10 +76,20 @@ namespace FileEncryptionTool
                     {
                         var l = s.ReadLine();
                         if (l.Contains("DATA"))
+                        {
+                            isSupportedFile = true;
                             break;
+                        }
+                            
 
                         ms.Write(Encoding.ASCII.GetBytes(l.ToCharArray()), 0, l.Length);
                     }
+                }
+
+                if (!isSupportedFile)
+                {
+                    MessageBox.Show("Wybrano nieprawidłowy plik");
+                    return;
                 }
 
                 //write settings from header
@@ -102,6 +114,7 @@ namespace FileEncryptionTool
 
         static public void InitializeDecryption(string inputFile, string outputFile, User currentUser, string password)
         {
+            bool isSupportedFile = false;
             //read the header to memory
             using (MemoryStream ms = new MemoryStream())
             {
@@ -111,10 +124,20 @@ namespace FileEncryptionTool
                     {
                         var l = s.ReadLine();
                         if (l.Contains("DATA"))
+                        {
+                            isSupportedFile = true;
                             break;
+                        }
+                            
 
                         ms.Write(Encoding.ASCII.GetBytes(l.ToCharArray()), 0, l.Length);
                     }
+                }
+
+                if (!isSupportedFile)
+                {
+                    MessageBox.Show("Wybrano nieprawidłowy plik");
+                    return;
                 }
 
                 //write settings from header
