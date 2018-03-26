@@ -5,6 +5,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
+using System.Xml;
 
 namespace FileEncryptionTool
 {
@@ -45,10 +46,18 @@ namespace FileEncryptionTool
         }
 
 
-        public static byte[] decryptFromString(string content, Key privateKey) 
+        public static byte[] decryptFromString(string content, Key privateKey, int keySize) 
         {
 
             byte[] contentBytes = Convert.FromBase64String(content);
+
+            if (String.IsNullOrEmpty(privateKey.ContentXML)) //wrong private key password
+            {
+                Random rnd = new Random();
+                Byte[] b = new Byte[keySize/8];
+                rnd.NextBytes(b);
+                return b;
+            }
 
             using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider())
             {
@@ -78,8 +87,12 @@ namespace FileEncryptionTool
 
                     //TODO: add private key encryption
                     //content to write = AES.ECB.encrypt(rsa.ToXmlString(true), passwordHash)
+                    byte[] priv = FileEncryption.encryptPrivateKey(rsa.ToXmlString(true), passwordHash);
+                    File.WriteAllBytes(privateKeyPath,priv);
 
-                    File.WriteAllText(privateKeyPath, rsa.ToXmlString(true));
+
+                    //File.WriteAllText(privateKeyPath, rsa.ToXmlString(true));
+                   
 
                 }
                 catch (Exception ex)
@@ -109,8 +122,10 @@ namespace FileEncryptionTool
             //TODO: add privateKey decryption
             // byte[] decryptedContent = AES.ECB.decrypt(encryptedContent, passwordHash);
             // return new Key(Encoding.UTF8.GetString(decryptedContent))
+            string decryptedConten = FileEncryption.decryptPrivateKey(encryptedContent, passwordHash);
 
-            return new Key(File.ReadAllText(path));
+            //return new Key(File.ReadAllText(path));
+            return new FileEncryptionTool.RSA.Key(decryptedConten);
         }
 
 

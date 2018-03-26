@@ -172,7 +172,7 @@ namespace FileEncryptionTool
                 {
                     if (user.Item1 == currentUser.Email)
                     {
-                        key = RSA.decryptFromString(user.Item2, currentUser.getPrivateKey(password));
+                        key = RSA.decryptFromString(user.Item2, currentUser.getPrivateKey(password), keySize);
                         break;
                     }
                 }
@@ -194,6 +194,7 @@ namespace FileEncryptionTool
                     aesAlg.BlockSize = blockSize;
                     aesAlg.Key = key;
                     aesAlg.IV = iv;
+                    aesAlg.Padding = PaddingMode.Zeros;
 
                     MessageBox.Show(String.Format("Rozpoczynanie szyfrowania, parametry:\nrozmiar klucza: {0}\nrozmiar podbloku: {1}\ntryb: {2}", keySize, blockSize, mode.ToString()));
 
@@ -241,6 +242,7 @@ namespace FileEncryptionTool
                     aesAlg.BlockSize = blockSize;
                     aesAlg.Key = key;
                     aesAlg.IV = iv;
+                    aesAlg.Padding = PaddingMode.Zeros;
 
                     MessageBox.Show(String.Format("Rozpoczynanie deszyfracji, parametry:\nrozmiar klucza: {0}\nrozmiar podbloku: {1}\ntryb: {2}", keySize, blockSize, mode.ToString()));
 
@@ -292,6 +294,82 @@ namespace FileEncryptionTool
                 MessageBox.Show(e.Message, "ERROR", MessageBoxButton.OK, MessageBoxImage.Error);
                 return false;
             }
+        }
+
+     
+        static public byte[] encryptPrivateKey(string content, byte[] password)
+        {
+
+            byte[] valueBytes = Encoding.UTF8.GetBytes(content);
+            byte[] encrypted;
+            using (Aes aes = Aes.Create())
+            {
+                aes.Key = password;
+                aes.GenerateIV();
+                aes.Mode = CipherMode.ECB;
+                aes.CreateEncryptor(aes.Key, aes.IV);
+
+                using (ICryptoTransform encryptor = aes.CreateEncryptor(aes.Key, aes.IV))
+                {
+                    using (MemoryStream to = new MemoryStream())
+                    {
+                        to.Write(aes.IV, 0, 16);
+                        using (CryptoStream writer = new CryptoStream(to, encryptor, CryptoStreamMode.Write))
+                        {
+                            writer.Write(valueBytes, 0, valueBytes.Length);
+                            writer.FlushFinalBlock();
+                            encrypted = to.ToArray();
+                        }
+                    }
+                }
+                aes.Clear();
+            }
+
+            return encrypted;
+        }
+
+
+
+        static public string decryptPrivateKey(byte[] content, byte[] password)
+        {
+            byte[] _initialVector = new byte[16];
+            Array.Copy(content, 0, _initialVector, 0, 16);
+           
+            byte[] decrypted;
+            int decryptedByteCount = 0;
+            using (Aes aes = Aes.Create())
+            {
+                aes.Key = password;
+                aes.IV = _initialVector;
+                aes.Mode = CipherMode.ECB;
+                aes.CreateEncryptor(aes.Key, aes.IV);
+
+                try
+                {
+                    using (ICryptoTransform decryptor = aes.CreateDecryptor(aes.Key, aes.IV))
+                    {
+                        using (MemoryStream from = new MemoryStream(content))
+                        {
+                            from.Read(_initialVector, 0, 16);
+                            using (CryptoStream reader = new CryptoStream(from, decryptor, CryptoStreamMode.Read))
+                            {
+                                decrypted = new byte[content.Length];
+                                decryptedByteCount = reader.Read(decrypted, 0, decrypted.Length);
+                            }
+                        }
+                    }
+                }catch(Exception e)
+                {
+
+                    //const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+                    // return new string(Enumerable.Repeat(chars, 150)
+                    //.Select(s => s[new Random().Next(s.Length)]).ToArray());
+                    return String.Empty;
+                }
+                aes.Clear();
+            }
+
+            return Encoding.UTF8.GetString(decrypted, 0 , decryptedByteCount);
         }
     }
 }
