@@ -40,7 +40,7 @@
                     <Button x:Name="removeRecipient" Content="Usuń" HorizontalAlignment="Left" Margin="447,69,0,0" VerticalAlignment="Top" Width="49" Click="removeRecipient_Click" RenderTransformOrigin="1.952,-1.817"/>
                 </Grid>
             </TabItem>
-            <TabItem Header="Deszyforowanie">
+            <TabItem Header="Deszyfrowanie">
                 <Grid Background="#FFE5E5E5">
                     <Label x:Name="label3" Content="Ścieżka pliku wejściowego:" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
                     <TextBox x:Name="decryptionInputFileBox" HorizontalAlignment="Left" Height="23" Margin="166,13,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="261"/>
@@ -53,7 +53,9 @@
                         <ListBox x:Name="decryptionRecipientsList" HorizontalAlignment="Left" Height="125" Margin="0,21,-2.333,0" VerticalAlignment="Top" Width="149"/>
                     </GroupBox>
                     <PasswordBox x:Name="decryptionPassword" HorizontalAlignment="Left" Margin="326,189,0,0" VerticalAlignment="Top" Width="115" Height="23"/>
-                    <Label x:Name="label5" Content="Wprowadź hasło dla wybranego użtkownika" HorizontalAlignment="Left" Margin="265,147,0,0" VerticalAlignment="Top"/>
+                    <Label x:Name="label5" Content="Wprowadź hasło dla wybranego użytkownika" HorizontalAlignment="Left" Margin="265,147,0,0" VerticalAlignment="Top"/>
+                    <Label Content="Rozszerzenie pliku: " HorizontalAlignment="Left" Margin="265,94,0,0" VerticalAlignment="Top"/>
+                    <Label x:Name="extension_Label" Content="" HorizontalAlignment="Left" Margin="378,94,0,0" VerticalAlignment="Top"/>
                 </Grid>
             </TabItem>
             <TabItem Header="Użytkownicy">

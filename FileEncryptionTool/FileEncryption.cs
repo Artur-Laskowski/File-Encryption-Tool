@@ -36,6 +36,7 @@ namespace FileEncryptionTool
                     new XElement("BlockSize", blockSize.ToString()),
                     new XElement("CipherMode", mode.ToString()),
                     new XElement("IV", string.Join("", iv)),
+                    new XElement("FileExtension", Path.GetExtension(inputFile)),
                     new XElement("ApprovedUsers",
                         from user in targetUsers
                         select new XElement("User",
@@ -63,7 +64,7 @@ namespace FileEncryptionTool
                 MessageBox.Show("Pomyślnie zapisano do pliku");
         }
 
-        static public void lodaPossibleRecipients(string inputFile, ListBox recipients)
+        static public void loadPossibleRecipientsAndFileType(string inputFile, ListBox recipients, Label extension)
         {
             bool isSupportedFile = false;
 
@@ -92,10 +93,12 @@ namespace FileEncryptionTool
                     return;
                 }
 
-                //write settings from header
+                //read settings from header
                 ms.Position = 0;
                 XDocument xdoc = XDocument.Load(ms);
                 var root = xdoc.Element("EncryptedFileHeader");
+
+                extension.Content = root.Element("FileExtension").Value;
 
                 List<string> emails = root.Element("ApprovedUsers").Elements().Select(element => element.Element("Email").Value).ToList();
                 Dictionary<string, User> allUsers = User.loadUsers().ToDictionary(x => x.Email, x => x);
@@ -147,6 +150,18 @@ namespace FileEncryptionTool
                 algorithmName = root.Element("Algorithm").Value;
                 keySize = Int32.Parse(root.Element("KeySize").Value);
                 blockSize = Int32.Parse(root.Element("BlockSize").Value);
+
+                var extension = root.Element("FileExtension").Value;
+                var outputExtension = Path.GetExtension(outputFile);
+                if (outputExtension != extension)
+                {
+                    MessageBox.Show("Rozszerzenie pliku zostanie zmienione na " + extension);
+                    if (string.IsNullOrEmpty(outputExtension))
+                        outputFile += extension;
+                    else
+                        outputFile.Replace(outputExtension, extension);
+                }
+
                 Enum.TryParse(root.Element("CipherMode").Value, out mode);
                 iv = root.Element("IV").Value.Select(s => Byte.Parse(s.ToString())).ToArray();
 
@@ -180,7 +195,7 @@ namespace FileEncryptionTool
                     aesAlg.Key = key;
                     aesAlg.IV = iv;
 
-                    MessageBox.Show(String.Format("Rozpoczynanie szyfrowania, parametry:\nrozmiar klucza: {0}\nrozmiar bloku: {1}\ntryb: {2}", keySize, blockSize, mode.ToString()));
+                    MessageBox.Show(String.Format("Rozpoczynanie szyfrowania, parametry:\nrozmiar klucza: {0}\nrozmiar podbloku: {1}\ntryb: {2}", keySize, blockSize, mode.ToString()));
 
                     ICryptoTransform encryptor = aesAlg.CreateEncryptor(aesAlg.Key, aesAlg.IV);
                     byte[] buffer = new byte[bufferSize];
@@ -227,7 +242,7 @@ namespace FileEncryptionTool
                     aesAlg.Key = key;
                     aesAlg.IV = iv;
 
-                    MessageBox.Show(String.Format("Starting decryption, params:\nkeySize: {0}\nblockSize: {1}\nmode: {2}", keySize, blockSize, mode.ToString()));
+                    MessageBox.Show(String.Format("Rozpoczynanie deszyfracji, parametry:\nrozmiar klucza: {0}\nrozmiar podbloku: {1}\ntryb: {2}", keySize, blockSize, mode.ToString()));
 
                     ICryptoTransform decryptor = aesAlg.CreateDecryptor(aesAlg.Key, aesAlg.IV);
                     byte[] buffer = new byte[bufferSize];

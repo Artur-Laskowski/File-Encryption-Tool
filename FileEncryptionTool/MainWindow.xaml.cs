@@ -178,7 +178,7 @@ namespace FileEncryptionTool
             if (openFileDialog.ShowDialog() == true)
             {
                 decryptionInputFileBox.Text = openFileDialog.FileName;
-                FileEncryption.lodaPossibleRecipients(openFileDialog.FileName, decryptionRecipientsList);
+                FileEncryption.loadPossibleRecipientsAndFileType(openFileDialog.FileName, decryptionRecipientsList, extension_Label);
             }
         }
 
