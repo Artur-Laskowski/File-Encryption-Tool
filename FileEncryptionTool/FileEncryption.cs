@@ -28,14 +28,13 @@ namespace FileEncryptionTool
 
         static public void InitializeEncryption(string inputFile, string outputFile)
         {
-            //TODO add error checking for block below
             XDocument xdoc = new XDocument(
                 new XElement("EncryptedFileHeader",
                     new XElement("Algorithm", algorithmName),
                     new XElement("KeySize", keySize.ToString()),
                     new XElement("BlockSize", blockSize.ToString()),
                     new XElement("CipherMode", mode.ToString()),
-                    new XElement("IV", string.Join("", iv)),
+                    new XElement("IV", Convert.ToBase64String(iv)),
                     new XElement("FileExtension", Path.GetExtension(inputFile)),
                     new XElement("ApprovedUsers",
                         from user in targetUsers
@@ -163,9 +162,9 @@ namespace FileEncryptionTool
                 }
 
                 Enum.TryParse(root.Element("CipherMode").Value, out mode);
-                iv = root.Element("IV").Value.Select(s => Byte.Parse(s.ToString())).ToArray();
-
-                //TODO add searching the user in this list and decrypting the session key
+                //iv = root.Element("IV").Value.Select(s => Byte.Parse(s.ToString())).ToArray();
+                iv = Convert.FromBase64String(root.Element("IV").Value);
+                
                 var usersAndKeys = root.Element("ApprovedUsers").Elements().Select(element => new Tuple<string, string>(element.Element("Email").Value, element.Element("SessionKey").Value)).ToList();
                
                 foreach (var user in usersAndKeys)
@@ -191,7 +190,7 @@ namespace FileEncryptionTool
                 {
                     aesAlg.KeySize = keySize;
                     aesAlg.Mode = mode;
-                    aesAlg.BlockSize = blockSize;
+                    aesAlg.FeedbackSize = blockSize;
                     aesAlg.Key = key;
                     aesAlg.IV = iv;
                     aesAlg.Padding = PaddingMode.Zeros;
@@ -239,7 +238,7 @@ namespace FileEncryptionTool
                 {
                     aesAlg.KeySize = keySize;
                     aesAlg.Mode = mode;
-                    aesAlg.BlockSize = blockSize;
+                    aesAlg.FeedbackSize = blockSize;
                     aesAlg.Key = key;
                     aesAlg.IV = iv;
                     aesAlg.Padding = PaddingMode.Zeros;
@@ -258,7 +257,6 @@ namespace FileEncryptionTool
                                 using (Stream input = File.OpenRead(inputFile))
                                 {
                                     //keep reading until we hit data label (we don't want to decrypt header)
-                                    //TODO put it into nice function
                                     bool found = false;
                                     while (!found)
                                     {

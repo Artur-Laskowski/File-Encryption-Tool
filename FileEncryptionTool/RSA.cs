@@ -84,8 +84,7 @@ namespace FileEncryptionTool
 
 
                     byte[] passwordHash = generateHash(privateKeyPassword);
-
-                    //TODO: add private key encryption
+                    
                     //content to write = AES.ECB.encrypt(rsa.ToXmlString(true), passwordHash)
                     byte[] priv = FileEncryption.encryptPrivateKey(rsa.ToXmlString(true), passwordHash);
                     File.WriteAllBytes(privateKeyPath,priv);
@@ -118,8 +117,7 @@ namespace FileEncryptionTool
         {
             byte[] encryptedContent = File.ReadAllBytes(path);
             byte[] passwordHash = generateHash(password);
-
-            //TODO: add privateKey decryption
+            
             // byte[] decryptedContent = AES.ECB.decrypt(encryptedContent, passwordHash);
             // return new Key(Encoding.UTF8.GetString(decryptedContent))
             string decryptedConten = FileEncryption.decryptPrivateKey(encryptedContent, passwordHash);

@@ -49,7 +49,6 @@ namespace FileEncryptionTool
 
         private void Update_RNG(List<Point> coords)
         {
-            //TODO: add option for choosing which rng methods to use
 
             //use coordinates entered by user
             List<byte> bytes = new List<byte>();
@@ -58,9 +57,7 @@ namespace FileEncryptionTool
                 bytes.Add(Convert.ToByte(p.X));
                 bytes.Add(Convert.ToByte(p.Y));
             }
-
-            //get system time
-            bytes.AddRange(BitConverter.GetBytes(DateTime.Now.ToBinary()));
+            
 
             //get system uptime
             using (var uptime = new PerformanceCounter("System", "System Up Time"))
@@ -70,10 +67,8 @@ namespace FileEncryptionTool
             }
 
             //get random number from Australian National University's Quantum RNG Server
-            //TODO: add variable length
-            //TODO: add error checking (check for success value in API return, lack of connection)
 
-            string result = new WebClient().DownloadString(string.Format("https://qrng.anu.edu.au/API/jsonI.php?length={0}&type=uint8", _bytesLengthANU));
+            string result = new WebClient().DownloadString(string.Format("https://qrng.anu.edu.au/API/jsonI.php?length={0}&type=uint8", (Int32.Parse(keySize_TextBox.Text) - 160) / 8));
             var m = Regex.Match(result, "\"data\":\\[(?<rnd>[0-9,]*?)\\]", RegexOptions.Singleline); //parse JSON with regex
 
             if (m.Success)
@@ -86,14 +81,18 @@ namespace FileEncryptionTool
                         bytes.Add(Byte.Parse(v));
                 }
             }
+
+            FileEncryption.key = bytes.ToArray();
+
+            encryptFile_Button.IsEnabled = true;
         }
 
         private byte[] GetAnuBytes(int length)
         {
             byte[] bytes = new byte[length];
-            for (int i = 0; i < length; i++)
-                bytes[i] = (byte)((i + 1) % 10);
-            return bytes;
+            //for (int i = 0; i < length; i++)
+            //    bytes[i] = (byte)((i + 1) % 10);
+            //return bytes;
             using (var wc = new WebClient())
             {
                 string result = wc.DownloadString(string.Format("https://qrng.anu.edu.au/API/jsonI.php?length={0}&type=uint8", length));
@@ -216,11 +215,11 @@ namespace FileEncryptionTool
             {
                 FileEncryption.targetUsers = recipientsListBox.Items.Cast<User>().ToList();
                 FileEncryption.mode = GetSelectedCipherMode();
-                FileEncryption.keySize = Int32.Parse(keySize_TextBox.Text); //TODO handle incorrect values for every parse
-                FileEncryption.key = GetAnuBytes(FileEncryption.keySize >> 3); //TODO use proper RNG generator
+                FileEncryption.keySize = Int32.Parse(keySize_TextBox.Text);
+                //FileEncryption.key = GetAnuBytes(FileEncryption.keySize >> 3);
                 FileEncryption.bufferSize = 1 << 15;
                 FileEncryption.blockSize = Int32.Parse(blockSize_TextBox.Text);
-                FileEncryption.iv = GetAnuBytes(FileEncryption.blockSize >> 3);
+                FileEncryption.iv = GetAnuBytes(16);
 
                 FileEncryption.InitializeEncryption(inputFile_TextBox.Text, outputFile_TextBox.Text);
             }
@@ -342,6 +341,17 @@ namespace FileEncryptionTool
             }
         }
 
-        
+        private static bool IsTextAllowed(string text) {
+            Regex regex = new Regex("[^0-9.-]+"); //regex that matches disallowed text
+            return !regex.IsMatch(text);
+        }
+
+        private void blockSize_TextBox_PreviewTextInput(object sender, System.Windows.Input.TextCompositionEventArgs e) {
+            e.Handled = !IsTextAllowed(e.Text) || ((TextBox)sender).Text.Length >= 3;
+        }
+
+        private void keySize_TextBox_PreviewTextInput(object sender, System.Windows.Input.TextCompositionEventArgs e) {
+            e.Handled = !IsTextAllowed(e.Text) || ((TextBox)sender).Text.Length >= 3;
+        }
     }
 }

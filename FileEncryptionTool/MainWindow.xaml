@@ -22,16 +22,16 @@
                     <Label Content="Ścieżka pliku wynikowego:" HorizontalAlignment="Left" Margin="10,283,0,0" VerticalAlignment="Top"/>
                     <Button x:Name="outputButton" Content="wybierz..." HorizontalAlignment="Left" Margin="432,286,0,0" VerticalAlignment="Top" Width="75" Click="outputFile_Button_Click" Height="23"/>
                     <GroupBox Header="Tryb szyfrowania" HorizontalAlignment="Left" Height="112" Margin="10,47,0,0" VerticalAlignment="Top" Width="111"/>
-                    <GroupBox Header="Długość bloku" HorizontalAlignment="Left" Height="83" Margin="138,47,0,0" VerticalAlignment="Top" Width="100">
-                        <TextBox x:Name="blockSize_TextBox" HorizontalAlignment="Left" Height="23" Margin="10,10,0,0" TextWrapping="Wrap" Text="128" VerticalAlignment="Top" Width="70"/>
+                    <GroupBox Header="Długość podbloku" HorizontalAlignment="Left" Height="83" Margin="138,47,0,0" VerticalAlignment="Top" Width="113">
+                        <TextBox x:Name="blockSize_TextBox" HorizontalAlignment="Left" Height="23" Margin="10,10,0,0" TextWrapping="Wrap" Text="8" VerticalAlignment="Top" Width="70" PreviewTextInput="blockSize_TextBox_PreviewTextInput"/>
                     </GroupBox>
                     <Button x:Name="generateRandomNumber_Button" Content="generuj klucz" HorizontalAlignment="Left" Margin="268,47,0,0" VerticalAlignment="Top" Width="83" Height="32" Click="generateRandomNumber_Button_Click"/>
-                    <Button x:Name="encryptFile_Button" Content="Szyfruj" HorizontalAlignment="Left" Margin="268,87,0,0" VerticalAlignment="Top" Width="83" Height="32" Click="encryptFile_Button_Click"/>
+                    <Button x:Name="encryptFile_Button" Content="Szyfruj" HorizontalAlignment="Left" Margin="268,87,0,0" VerticalAlignment="Top" Width="83" Height="32" Click="encryptFile_Button_Click" IsEnabled="False"/>
                     <ProgressBar x:Name="encryptionProgressBar" HorizontalAlignment="Left" Height="16" Margin="22,314,0,0" VerticalAlignment="Top" Width="485"/>
                     <Label x:Name="validBlockSize_Label" Content="" HorizontalAlignment="Left" Margin="148,97,0,0" VerticalAlignment="Top" Width="75"/>
 
-                    <GroupBox Header="Długość klucza" HorizontalAlignment="Left" Height="76" Margin="138,136,0,0" VerticalAlignment="Top" Width="100">
-                        <TextBox x:Name="keySize_TextBox" HorizontalAlignment="Left" Height="23" Margin="10,10,0,0" TextWrapping="Wrap" Text="256" VerticalAlignment="Top" Width="70"/>
+                    <GroupBox Header="Długość klucza" HorizontalAlignment="Left" Height="76" Margin="138,136,0,0" VerticalAlignment="Top" Width="113">
+                        <TextBox x:Name="keySize_TextBox" HorizontalAlignment="Left" Height="23" Margin="10,10,0,0" TextWrapping="Wrap" Text="256" VerticalAlignment="Top" Width="70" PreviewTextInput="keySize_TextBox_PreviewTextInput"/>
                     </GroupBox>
                     <GroupBox x:Name="groupBox" Header="Odbiorcy" HorizontalAlignment="Left" Margin="367,47,0,0" VerticalAlignment="Top" Height="234" Width="140">
                         <ListBox x:Name="recipientsListBox" HorizontalAlignment="Left" Height="185" VerticalAlignment="Top" Width="130" Margin="0,28,-2,-1.667"/>
