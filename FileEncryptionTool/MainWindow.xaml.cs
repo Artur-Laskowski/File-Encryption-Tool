@@ -68,21 +68,9 @@ namespace FileEncryptionTool
 
             //get random number from Australian National University's Quantum RNG Server
 
-            string result = new WebClient().DownloadString(string.Format("https://qrng.anu.edu.au/API/jsonI.php?length={0}&type=uint8", (Int32.Parse(keySize_TextBox.Text) - 160) / 8));
-            var m = Regex.Match(result, "\"data\":\\[(?<rnd>[0-9,]*?)\\]", RegexOptions.Singleline); //parse JSON with regex
+FileEncryption.key = GetAnuBytes(Int32.Parse(keySize_TextBox.Text) / 8);
 
-            if (m.Success)
-            {
-                var g = m.Groups["rnd"];
-                if (g != null && g.Success)
-                {
-                    string[] values = g.Value.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-                    foreach (var v in values)
-                        bytes.Add(Byte.Parse(v));
-                }
-            }
-
-            FileEncryption.key = bytes.ToArray();
+            //FileEncryption.key = bytes.ToArray();
 
             encryptFile_Button.IsEnabled = true;
         }
@@ -90,9 +78,9 @@ namespace FileEncryptionTool
         private byte[] GetAnuBytes(int length)
         {
             byte[] bytes = new byte[length];
-            //for (int i = 0; i < length; i++)
-            //    bytes[i] = (byte)((i + 1) % 10);
-            //return bytes;
+            for (int i = 0; i < length; i++)
+                bytes[i] = (byte)((i + 1) % 10);
+            return bytes;
             using (var wc = new WebClient())
             {
                 string result = wc.DownloadString(string.Format("https://qrng.anu.edu.au/API/jsonI.php?length={0}&type=uint8", length));
@@ -266,6 +254,11 @@ namespace FileEncryptionTool
 
 
                 User selectedUser = (User)decryptionRecipientsList.SelectedItem;
+                if(selectedUser == null)
+                {
+                    MessageBox.Show("Nie wybrano użytkownika");
+                    return;
+                }
                 string password = decryptionPassword.Password;
                 
                 FileEncryption.InitializeDecryption(decryptionInputFileBox.Text, decryptionOutputFileBox.Text, selectedUser, password);

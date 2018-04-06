@@ -101,8 +101,8 @@ namespace FileEncryptionTool
 
                 List<string> emails = root.Element("ApprovedUsers").Elements().Select(element => element.Element("Email").Value).ToList();
                 Dictionary<string, User> allUsers = User.loadUsers().ToDictionary(x => x.Email, x => x);
-                
-              
+
+                recipients.Items.Clear();
                 foreach (var email in emails)
                 {
                     if (allUsers.ContainsKey(email))
