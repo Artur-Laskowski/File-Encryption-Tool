@@ -54,13 +54,13 @@ namespace FileEncryptionTool
                     writer.Write("\r\nDATA\r\n");
                 }catch(Exception ex)
                 {
-                    MessageBox.Show("Błąd: " + ex);
+                    MessageBox.Show("Error: " + ex);
                 }
                 
             }
 
             if (EncryptFile(inputFile, outputFile))
-                MessageBox.Show("Pomyślnie zapisano do pliku");
+                MessageBox.Show("Successfuly written to file");
         }
 
         static public void loadPossibleRecipientsAndFileType(string inputFile, ListBox recipients, Label extension)
@@ -88,7 +88,7 @@ namespace FileEncryptionTool
 
                 if (!isSupportedFile)
                 {
-                    MessageBox.Show("Wybrano nieprawidłowy plik");
+                    MessageBox.Show("Incorrect file");
                     return;
                 }
 
@@ -138,7 +138,7 @@ namespace FileEncryptionTool
 
                 if (!isSupportedFile)
                 {
-                    MessageBox.Show("Wybrano nieprawidłowy plik");
+                    MessageBox.Show("Incorrect file");
                     return;
                 }
 
@@ -154,7 +154,7 @@ namespace FileEncryptionTool
                 var outputExtension = Path.GetExtension(outputFile);
                 if (outputExtension != extension)
                 {
-                    MessageBox.Show("Rozszerzenie pliku zostanie zmienione na " + extension);
+                    MessageBox.Show("File extension was change to " + extension);
                     if (string.IsNullOrEmpty(outputExtension))
                         outputFile += extension;
                     else
@@ -179,7 +179,7 @@ namespace FileEncryptionTool
             
 
             if (DecryptFile(inputFile, outputFile))
-                MessageBox.Show("Pomyślnie rozszyfrowano plik");
+                MessageBox.Show("File successfuly decrypted");
         }
 
         static private bool EncryptFile(string inputFile, string outputFile)
@@ -195,7 +195,7 @@ namespace FileEncryptionTool
                     aesAlg.IV = iv;
                     aesAlg.Padding = PaddingMode.Zeros;
 
-                    MessageBox.Show(String.Format("Rozpoczynanie szyfrowania, parametry:\nrozmiar klucza: {0}\nrozmiar podbloku: {1}\ntryb: {2}", keySize, blockSize, mode.ToString()));
+                    MessageBox.Show(String.Format("Starting encryption, parameters:\nkey size: {0}\nfeedback size: {1}\nmode: {2}", keySize, blockSize, mode.ToString()));
 
                     ICryptoTransform encryptor = aesAlg.CreateEncryptor(aesAlg.Key, aesAlg.IV);
                     byte[] buffer = new byte[bufferSize];
@@ -243,7 +243,7 @@ namespace FileEncryptionTool
                     aesAlg.IV = iv;
                     aesAlg.Padding = PaddingMode.Zeros;
 
-                    MessageBox.Show(String.Format("Rozpoczynanie deszyfracji, parametry:\nrozmiar klucza: {0}\nrozmiar podbloku: {1}\ntryb: {2}", keySize, blockSize, mode.ToString()));
+                    MessageBox.Show(String.Format("Starting decryption, parameters:\nkey size: {0}\nfeedback size: {1}\nmode: {2}", keySize, blockSize, mode.ToString()));
 
                     ICryptoTransform decryptor = aesAlg.CreateDecryptor(aesAlg.Key, aesAlg.IV);
                     byte[] buffer = new byte[bufferSize];
@@ -356,12 +356,8 @@ namespace FileEncryptionTool
                             }
                         }
                     }
-                }catch(Exception e)
+                } catch (Exception e)
                 {
-
-                    //const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-                    // return new string(Enumerable.Repeat(chars, 150)
-                    //.Select(s => s[new Random().Next(s.Length)]).ToArray());
                     return String.Empty;
                 }
                 aes.Clear();

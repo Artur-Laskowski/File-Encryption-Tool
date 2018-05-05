@@ -115,19 +115,19 @@ FileEncryption.key = GetAnuBytes(Int32.Parse(keySize_TextBox.Text) / 8);
 
         private string ValidateInputPath(string path)
         {
-            if (String.IsNullOrEmpty(path)) return "Nie wybrano pliku wejściowego!";
-            if (!File.Exists(path)) return "Plik źródłowy nie istnieje!";
+            if (String.IsNullOrEmpty(path)) return "Input file was not chosen!";
+            if (!File.Exists(path)) return "Input file doesn't exist!";
             return null;
         }
 
         private string validateOutputPath(string path)
         {
-            if (String.IsNullOrEmpty(path)) return "Nie wybrano pliku wynikowego!";
-            if (File.Exists(path)) return "Plik docelowy już istnieje!";
-            if (!Path.IsPathRooted(path)) return "Niepoprawna ścieżka pliku docelowego!";
+            if (String.IsNullOrEmpty(path)) return "Destination file was not chosen!";
+            if (File.Exists(path)) return "Destination file already exists!";
+            if (!Path.IsPathRooted(path)) return "Incorrect path for destination file!";
 
             try { Path.GetFullPath(path); }
-            catch { return "Folder docelowy nie istnieje!"; }
+            catch { return "Destination directory doesn't exist!"; }
 
             string pathAndFileName = path;
 
@@ -139,7 +139,7 @@ FileEncryption.key = GetAnuBytes(Int32.Parse(keySize_TextBox.Text) / 8);
             }
             catch
             {
-                return "Nie można utworzyć folderu docelowego!";
+                return "Destination directory was not chosen!";
             }
 
             return null;
@@ -213,7 +213,7 @@ FileEncryption.key = GetAnuBytes(Int32.Parse(keySize_TextBox.Text) / 8);
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Wystąpił błąd przy szyfrowaniu " + ex);
+                MessageBox.Show("Error during decryption: " + ex);
             }
         }
 
@@ -256,7 +256,7 @@ FileEncryption.key = GetAnuBytes(Int32.Parse(keySize_TextBox.Text) / 8);
                 User selectedUser = (User)decryptionRecipientsList.SelectedItem;
                 if(selectedUser == null)
                 {
-                    MessageBox.Show("Nie wybrano użytkownika");
+                    MessageBox.Show("A user was not chosen");
                     return;
                 }
                 string password = decryptionPassword.Password;
@@ -265,7 +265,7 @@ FileEncryption.key = GetAnuBytes(Int32.Parse(keySize_TextBox.Text) / 8);
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Wystąpił błąd przy deszyfracji");
+                MessageBox.Show("Error encountered during decryption");
             }
         }
 
@@ -285,7 +285,7 @@ FileEncryption.key = GetAnuBytes(Int32.Parse(keySize_TextBox.Text) / 8);
             if(passwordError == null && repeatError == null && !String.IsNullOrEmpty(_email))
             {
                 new User(_email, _password);
-                MessageBox.Show("Dodano nowego użytkownika: " + _email);
+                MessageBox.Show("Added new user: " + _email);
             }
 
             
@@ -296,7 +296,7 @@ FileEncryption.key = GetAnuBytes(Int32.Parse(keySize_TextBox.Text) / 8);
         {
             if (passwordBoxRepeat.Password != passwordBox.Password)
             {
-                return "Podane hasła muszą być takie same!";
+                return "Passwords must match!";
             }
             return null;
         }
