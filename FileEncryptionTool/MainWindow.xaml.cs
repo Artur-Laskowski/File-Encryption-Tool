@@ -22,13 +22,6 @@ namespace FileEncryptionTool
     /// </summary>
     public partial class MainWindow : Window
     {
-        private string _algorithmName;
-        private int _keySize;
-        private int _blockSize;
-        private string _cipherModeName;
-        private string _ivName;
-
-        private int _bytesLengthANU = 100;
 
         //private List<User> _users = new List<User>();
 
@@ -68,14 +61,14 @@ namespace FileEncryptionTool
 
             //get random number from Australian National University's Quantum RNG Server
 
-FileEncryption.key = GetAnuBytes(Int32.Parse(keySize_TextBox.Text) / 8);
+            FileEncryption.key = GetAnuBytes(Int32.Parse(keySize_TextBox.Text) / 8);
 
             //FileEncryption.key = bytes.ToArray();
 
             encryptFile_Button.IsEnabled = true;
         }
 
-        private byte[] GetAnuBytes(int length)
+        public static byte[] GetAnuBytes(int length)
         {
             byte[] bytes = new byte[length];
             for (int i = 0; i < length; i++)

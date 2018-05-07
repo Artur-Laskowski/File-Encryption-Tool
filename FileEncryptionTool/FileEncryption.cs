@@ -363,7 +363,7 @@ namespace FileEncryptionTool
                 aes.Clear();
             }
 
-            return Encoding.UTF8.GetString(decrypted, 0 , decryptedByteCount);
+            return Encoding.UTF8.GetString(decrypted, 0, decryptedByteCount);
         }
     }
 }

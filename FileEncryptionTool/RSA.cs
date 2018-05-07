@@ -9,7 +9,7 @@ using System.Xml;
 
 namespace FileEncryptionTool
 {
-    class RSA
+    public class RSA
     {
 
         public class Key
@@ -67,7 +67,7 @@ namespace FileEncryptionTool
             }
         }
 
-        private static byte[] generateHash(string password)
+        public static byte[] generateHash(string password)
         {
             SHA256 sha = SHA256Managed.Create();
             byte[] passwordBytes = Encoding.UTF8.GetBytes(password);
