@@ -8,7 +8,7 @@
         Title="RNG_Window" Height="375.63" Width="300" ResizeMode="NoResize" WindowStartupLocation="CenterScreen" WindowStyle="ToolWindow">
     <Grid>
         <Canvas x:Name="userClickingInput_Canvas" HorizontalAlignment="Left" Height="255" Margin="10,41,0,-28" VerticalAlignment="Top" Width="255" Background="Gainsboro" MouseLeftButtonUp="userClickingInput_Canvas_MouseLeftButtonUp"/>
-        <Label Content="Kliknij w 8 różnych miejscach na poniższym polu" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
+        <Label Content="Click in 8 places on field below" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
         <Label x:Name="clicksCounter_Label" Content="0 / 8" HorizontalAlignment="Left" Margin="10,302,0,0" VerticalAlignment="Top"/>
 
     </Grid>
